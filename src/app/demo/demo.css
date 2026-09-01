@@ -6,6 +6,11 @@
    tokens : chaque démo pose ses propres variables sur son enveloppe, et les
    pages les consomment par valeurs arbitraires (`bg-[var(--d-bg)]`).
 
+   ⚠️ Aucune couleur hors de ces variables n'existe comme classe : le `@theme`
+   du site principal remet `--color-*: initial`, ce qui supprime jusqu'à
+   `white` et `black`. Écrire `text-white` compile sans erreur et ne produit
+   rien — il faut une variable, même pour du blanc.
+
    C'est volontaire. Le but de ces démos est de montrer une amplitude, pas de
    décliner une direction — elles doivent donc pouvoir sortir des contraintes
    du site vitrine : dégradés, ombres, arrondis, échelles typographiques
@@ -30,42 +35,6 @@
 
 .demo-display {
   font-family: var(--d-font-display);
-}
-
-/* --- Atelier Vernet : bois et crème ------------------------------------- */
-.demo-vernet {
-  --d-bg: #f7f1e6;
-  --d-surface: #efe4d1;
-  --d-ink: #2a1f16;
-  --d-muted: #6b5842;
-  --d-accent: #8a5427;
-  --d-line: #dccdb4;
-  --d-font-display: var(--dv-display), Georgia, serif;
-  --d-font-text: var(--dv-text), system-ui, sans-serif;
-}
-
-/* --- Maison Tessier : palette chaude ------------------------------------ */
-.demo-tessier {
-  --d-bg: #fff8f0;
-  --d-surface: #fbe9d8;
-  --d-ink: #3a1f14;
-  --d-muted: #8a5d48;
-  --d-accent: #bb3e13;
-  --d-line: #f0d9c4;
-  --d-font-display: var(--dt-display), Georgia, serif;
-  --d-font-text: var(--dt-text), system-ui, sans-serif;
-}
-
-/* --- Studio Halage : sombre et minéral ---------------------------------- */
-.demo-halage {
-  --d-bg: #14161a;
-  --d-surface: #1d2126;
-  --d-ink: #e8e6e1;
-  --d-muted: #9ba09c;
-  --d-accent: #8fbfa2;
-  --d-line: #2c3138;
-  --d-font-display: var(--dh-display), system-ui, sans-serif;
-  --d-font-text: var(--dh-text), system-ui, sans-serif;
 }
 
 /* --- Panneaux de bois --------------------------------------------------- */
@@ -128,4 +97,63 @@
 .glaze-nuit {
   --glaze-a: #4b5b73;
   --glaze-b: #232c3a;
+}
+
+/* --- Vasseur : le registre courant --------------------------------------
+   Blanc, un bleu franc, des boîtes grises, des angles à peine adoucis. Aucun
+   effet, aucune échelle typographique spectaculaire. C'est la direction que
+   des milliers d'artisans ont déjà, et c'est précisément le sujet : montrer
+   qu'on sait aussi faire simple, propre et lisible, sans signature. */
+.demo-vasseur {
+  --d-bg: #ffffff;
+  --d-surface: #f2f5f8;
+  --d-ink: #17222e;
+  --d-muted: #566577;
+  --d-line: #d9e1e9;
+  --d-accent: #0b5fa5;
+  /* Le blanc doit passer par une variable : le `@theme` du site remet
+     `--color-*: initial`, donc `bg-white` et `text-white` ne sont pas
+     compilés et ne produisent strictement rien. */
+  --d-card: #ffffff;
+  --d-accent-dark: #084a80;
+  --d-urgent: #c8442a;
+  --d-font-display: var(--font-vasseur-display), system-ui, sans-serif;
+  --d-font-text: var(--font-vasseur-text), system-ui, sans-serif;
+}
+
+/* --- Cardot : le registre haut de gamme ---------------------------------
+   Presque monochrome. Un blanc cassé chaud, une encre profonde, un laiton
+   sourd qui ne sert qu'aux étiquettes. Aucun bouton plein sur toute la page :
+   la hiérarchie se fait à l'échelle et au blanc, pas au contraste de fond. */
+.demo-cardot {
+  --d-bg: #faf9f7;
+  --d-surface: #f1ede7;
+  --d-ink: #14120f;
+  --d-muted: #6b6459;
+  --d-line: #ddd7cd;
+  --d-accent: #937f52;
+  --d-card: #ffffff;
+  --d-wood-1: #c4a882;
+  --d-wood-2: #9d7c53;
+  --d-wood-3: #6d5537;
+  --d-font-display: var(--font-cardot-display), Georgia, serif;
+  --d-font-text: var(--font-cardot-text), system-ui, sans-serif;
+}
+
+/* --- Pays d'Othe : la petite boutique -----------------------------------
+   Ambres et miel, angles largement adoucis, une carte produit par pot. Le
+   prix est toujours le deuxième élément le plus visible après le nom. */
+.demo-othe {
+  --d-bg: #fffdf6;
+  --d-surface: #fdf2d9;
+  --d-ink: #3a2c12;
+  --d-muted: #7d6a42;
+  --d-line: #ecdfbf;
+  --d-accent: #cf8d0f;
+  --d-card: #ffffff;
+  --d-honey-1: #f5d371;
+  --d-honey-2: #e0a32a;
+  --d-honey-3: #b8760d;
+  --d-font-display: var(--font-othe-display), system-ui, sans-serif;
+  --d-font-text: var(--font-othe-text), system-ui, sans-serif;
 }

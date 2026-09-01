@@ -6,7 +6,7 @@ import { PageEntrance } from "@/components/motion/PageEntrance";
 import { Section } from "@/components/ui/Section";
 import { features } from "@/content/features";
 import { pages } from "@/content/pages";
-import { projects } from "@/content/projects";
+import { built, projects } from "@/content/projects";
 import { pageMetadata } from "@/lib/metadata";
 
 import type { Metadata } from "next";
@@ -47,22 +47,21 @@ export default function WorkPage() {
             {pages.work.lead}
           </p>
 
-          <p
-            data-enter="body"
-            className="border-accent text-base text-ink-2 mt-10 max-w-lg border-l pl-5"
-          >
-            {projects.notice}
-          </p>
-
-          <div className="mt-20 grid gap-12 md:grid-cols-3 md:gap-8">
-            {projects.items.map((project, index) => (
-              <ProjectCard
-                key={project.slug}
-                project={project}
-                as="h2"
-                priority={index === 0}
-              />
-            ))}
+          <div data-enter="body" className="mt-20">
+            <h2 className="font-mono text-label text-accent uppercase">
+              {projects.intro.title}
+            </h2>
+            <div className="mt-8">
+              {built.map((project) => (
+                <ProjectCard
+                  key={project.slug}
+                  project={project}
+                  as="h3"
+                  priority
+                  featured
+                />
+              ))}
+            </div>
           </div>
         </Section>
       </PageEntrance>

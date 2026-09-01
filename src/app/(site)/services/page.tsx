@@ -1,4 +1,5 @@
 import { CallToAction } from "@/components/sections/CallToAction";
+import { DemoSites } from "@/components/sections/DemoSites";
 import { Method } from "@/components/sections/Method";
 import { JsonLd } from "@/components/ui/JsonLd";
 import { PageEntrance } from "@/components/motion/PageEntrance";
@@ -59,6 +60,8 @@ export default function ServicesPage() {
           </p>
         </Section>
       </PageEntrance>
+
+      <DemoSites tone="soft" as="h2" />
 
       <Method tone="soft" />
       <CallToAction />

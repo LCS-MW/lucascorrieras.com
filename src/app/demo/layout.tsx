@@ -30,7 +30,7 @@ export default function DemoLayout({ children }: { children: ReactNode }) {
             Démonstration — projet fictif, aucun client derrière
           </p>
           <TransitionLink
-            href="/realisations"
+            href="/services"
             className="font-mono text-label text-accent uppercase"
           >
             <span className="link-underline">

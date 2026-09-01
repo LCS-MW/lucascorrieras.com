@@ -122,8 +122,20 @@ export default async function ProjectPage({
             {project.intent}
           </p>
 
+          {/* Le cadre du projet est posé avant les arguments, pas après : un
+              visiteur qui l'apprend en fin de page a déjà lu le reste comme
+              une référence commerciale. */}
+          {"context" in project ? (
+            <p
+              data-enter="body"
+              className="border-accent text-base text-ink-2 mt-8 max-w-xl border-l pl-5"
+            >
+              {project.context}
+            </p>
+          ) : null}
+
           <div data-enter="body" className="mt-10">
-            <Button href={project.demo}>{projects.demoLabel}</Button>
+            <Button href={project.demo}>{project.demoLabel}</Button>
           </div>
 
           <dl
@@ -174,10 +186,6 @@ export default async function ProjectPage({
             </li>
           ))}
         </ol>
-
-        <p className="border-accent text-base text-ink-2 mt-12 max-w-lg border-l pl-5">
-          {projects.notice}
-        </p>
       </Section>
 
       <CallToAction />

@@ -16,14 +16,15 @@ export const features = {
   /**
    * Section et pages « Réalisations ».
    *
-   * Éteint tant qu'aucun site n'a été livré à un client. Les trois projets du
-   * dossier sont des concepts : les présenter sous le mot « réalisations »
-   * laisse entendre une commande qui n'a pas eu lieu, quelle que soit
-   * l'étiquette posée à côté.
+   * Éteint. Le portail de la mairie de Sommeval reste dans le dossier, avec sa
+   * fiche complète et sa capture : il ne représente plus le niveau actuel et
+   * sera remplacé, pas jeté. Rallumer cette ligne suffit à tout remettre —
+   * l'entrée de navigation, le lien de pied de page, la section d'accueil, les
+   * deux routes, leurs images de partage et les entrées du plan du site.
    *
-   * Les trois démonstrations restent en ligne sous `/demo/`, en `noindex` et
-   * sans lien depuis le site : ce sont des URL à envoyer à un prospect, pas
-   * une galerie publique.
+   * Les trois démonstrations ne dépendent pas de cet interrupteur : elles
+   * vivent auprès de l'offre, sur `/services` et sur l'accueil, et restent
+   * visibles.
    */
   realisations: false,
 } as const;

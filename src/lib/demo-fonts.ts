@@ -1,10 +1,10 @@
 import {
-  DM_Sans,
-  Fraunces,
-  Instrument_Serif,
-  Inter,
-  Karla,
-  Space_Grotesk,
+  Archivo,
+  Barlow,
+  Bodoni_Moda,
+  Jost,
+  Nunito_Sans,
+  Outfit,
 } from "next/font/google";
 
 /**
@@ -12,51 +12,65 @@ import {
  *
  * Volontairement séparées de `lib/fonts` : ce sont trois identités étrangères
  * au site principal, et elles ne doivent pas peser sur ses pages. next/font ne
- * charge une famille que là où elle est utilisée — ces six-là ne partent donc
- * jamais avec l'accueil.
+ * charge une famille que sur les routes qui la déclarent.
+ *
+ * Les trois paires sont choisies pour s'opposer, pas pour se compléter : le
+ * registre courant, le registre haut de gamme et le registre boutique doivent
+ * se reconnaître à la typographie avant même la couleur.
  */
 
-/** Atelier Vernet — menuiserie. Serif à empattements marqués, texte neutre. */
-export const vernetDisplay = Fraunces({
+/* --- Vasseur : le registre courant ---------------------------------------
+   Une grotesque neutre pour les titres, une autre pour le texte. Aucune
+   personnalité typographique : c'est le sujet de cette démo. Un plombier n'a
+   pas besoin qu'on remarque sa police, il a besoin qu'on trouve son numéro. */
+
+export const vasseurDisplay = Archivo({
   subsets: ["latin"],
   weight: ["600", "700"],
   display: "swap",
-  variable: "--dv-display",
+  variable: "--font-vasseur-display",
 });
 
-export const vernetText = Karla({
+export const vasseurText = Barlow({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  display: "swap",
+  variable: "--font-vasseur-text",
+});
+
+/* --- Cardot : le registre haut de gamme ----------------------------------
+   Un didone à très fort contraste, dessiné pour les grandes tailles et pour
+   le blanc autour. Le texte est une géométrique fine, presque effacée : sur
+   ce registre, ce qui compte est ce qu'on ne met pas. */
+
+export const cardotDisplay = Bodoni_Moda({
   subsets: ["latin"],
   weight: ["400", "500"],
   display: "swap",
-  variable: "--dv-text",
+  variable: "--font-cardot-display",
 });
 
-/** Maison Tessier — traiteur. Serif de titrage étroit, grotesque humaniste. */
-export const tessierDisplay = Instrument_Serif({
+export const cardotText = Jost({
   subsets: ["latin"],
-  weight: ["400"],
+  weight: ["300", "400"],
   display: "swap",
-  variable: "--dt-display",
+  variable: "--font-cardot-text",
 });
 
-export const tessierText = DM_Sans({
+/* --- Pays d'Othe : la petite boutique ------------------------------------
+   Deux sans-serif aux formes ouvertes et arrondies. Aucune prétention
+   graphique : le sujet est un pot de miel avec son prix dessus. */
+
+export const otheDisplay = Outfit({
   subsets: ["latin"],
-  weight: ["400", "500"],
+  weight: ["600", "700"],
   display: "swap",
-  variable: "--dt-text",
+  variable: "--font-othe-display",
 });
 
-/** Studio Halage — céramique. Grotesque technique sur fond sombre. */
-export const halageDisplay = Space_Grotesk({
+export const otheText = Nunito_Sans({
   subsets: ["latin"],
-  weight: ["500", "700"],
+  weight: ["400", "600"],
   display: "swap",
-  variable: "--dh-display",
-});
-
-export const halageText = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  display: "swap",
-  variable: "--dh-text",
+  variable: "--font-othe-text",
 });

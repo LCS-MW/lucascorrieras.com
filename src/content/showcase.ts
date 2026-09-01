@@ -12,7 +12,7 @@ import type { SectionIntro } from "@/content/types";
  */
 export const showcase = {
   intro: {
-    index: "02",
+    index: "03",
     title: "De la maquette au site",
     note: "Le même écran, du plan annoté au résultat livré. C’est le passage que la plupart des gens ne voient jamais.",
   } satisfies SectionIntro,

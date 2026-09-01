@@ -28,12 +28,12 @@ export const pages = {
   } satisfies PageContent,
 
   work: {
-    kicker: "Trois concepts",
+    kicker: "Un site, trois exercices",
     metaTitle: "Réalisations",
     metaDescription:
-      "Trois projets conçus de bout en bout : menuiserie, traiteur, céramique. Des concepts, présentés comme tels.",
+      "Le portail de la mairie de Sommeval, en ligne. Et trois sites conçus de bout en bout pour la menuiserie, la restauration et la céramique.",
     h1: "Réalisations",
-    lead: "Trois projets menés du premier croquis au site complet, sans commanditaire. Ils montrent une façon de traiter un métier.",
+    lead: "Un site commandé, conçu et mis en ligne. Puis trois exercices, pour montrer ce que ça donne sur d’autres métiers.",
   } satisfies PageContent,
 
   approach: {

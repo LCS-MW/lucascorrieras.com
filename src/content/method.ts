@@ -14,7 +14,7 @@ import type { SectionIntro } from "@/content/types";
  */
 export const method = {
   intro: {
-    index: "03",
+    index: "04",
     title: "Comment ça se passe",
     note: "Quatre étapes, dans cet ordre. Vous n’intervenez que sur les deux premières.",
   } satisfies SectionIntro,

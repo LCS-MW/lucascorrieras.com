@@ -17,6 +17,8 @@ export function ProjectPreview({
   alt,
   slug,
   priority = false,
+  wireframe = true,
+  sizes = "(min-width: 768px) 30vw, 92vw",
 }: {
   src: string;
   alt: string;
@@ -28,6 +30,19 @@ export function ProjectPreview({
   slug: string;
   /** À poser sur la première carte : c'est l'élément LCP sur mobile. */
   priority?: boolean;
+  /**
+   * Le voile filaire ne va qu'aux concepts. Posé sur la capture d'un site
+   * réellement en ligne, il le fait ressembler à une maquette — soit
+   * exactement l'inverse de ce que cette capture est censée prouver.
+   */
+  wireframe?: boolean;
+  /**
+   * Largeur d'affichage annoncée au sélecteur de source. La valeur par défaut
+   * vaut pour la grille de trois colonnes ; une carte en vedette occupe deux
+   * tiers de la largeur et recevrait sinon une image calibrée pour un tiers,
+   * donc affichée floue.
+   */
+  sizes?: string;
 }) {
   return (
     <div
@@ -40,24 +55,26 @@ export function ProjectPreview({
         alt={alt}
         width={1600}
         height={1200}
-        sizes="(min-width: 768px) 30vw, 92vw"
+        sizes={sizes}
         priority={priority}
         className="absolute inset-0 h-full w-full object-cover object-top"
       />
 
-      <div
-        aria-hidden="true"
-        data-preview-wire
-        className="bg-paper/35 absolute inset-0 flex flex-col gap-3 p-5"
-      >
-        <span className="bg-ink/25 block h-2 w-1/3" />
-        <span className="border-accent/80 block h-1/3 w-full border border-dashed" />
-        <span className="bg-ink/20 block h-2 w-4/5" />
-        <span className="bg-ink/20 block h-2 w-3/5" />
-        <div className="mt-auto flex gap-2">
-          <span className="bg-accent/70 block h-6 w-1/3" />
+      {wireframe ? (
+        <div
+          aria-hidden="true"
+          data-preview-wire
+          className="bg-paper/35 absolute inset-0 flex flex-col gap-3 p-5"
+        >
+          <span className="bg-ink/25 block h-2 w-1/3" />
+          <span className="border-accent/80 block h-1/3 w-full border border-dashed" />
+          <span className="bg-ink/20 block h-2 w-4/5" />
+          <span className="bg-ink/20 block h-2 w-3/5" />
+          <div className="mt-auto flex gap-2">
+            <span className="bg-accent/70 block h-6 w-1/3" />
+          </div>
         </div>
-      </div>
+      ) : null}
     </div>
   );
 }
