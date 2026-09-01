@@ -5,11 +5,14 @@ import type { PageContent } from "@/content/types";
 /**
  * Textes des deux pages légales.
  *
- * La politique de confidentialité est courte parce qu'elle est vraie : le
- * site ne dépose aucun cookie, n'embarque aucun traceur et n'a pas de
- * formulaire. Vérifié — aucune dépendance d'analytique dans le projet. Le
- * jour où un formulaire ou une mesure d'audience arrive, ce texte doit être
- * réécrit le même jour.
+ * La politique de confidentialité décrit exactement ce que le site fait, et
+ * rien de plus. Elle affirmait « ni Google Analytics, ni aucun autre outil de
+ * mesure » et « vos pages consultées ne sont ni enregistrées ni transmises » :
+ * l'ajout de Vercel Analytics et Speed Insights a rendu ces deux phrases
+ * fausses le jour même, et elle a donc été réécrite dans le même commit.
+ *
+ * C'est la règle : un outil qui observe le visiteur n'entre pas dans le site
+ * avant que cette page ne le dise.
  *
  * Elle n'a volontairement pas été reprise de l'ancien site : celui-ci déclare
  * un formulaire de contact et un sous-traitant, EmailJS. Ni l'un ni l'autre
@@ -97,16 +100,24 @@ export const legalPages = {
     kicker: "Données personnelles",
     metaTitle: "Confidentialité",
     metaDescription:
-      "Ce site ne dépose aucun cookie et ne collecte aucune donnée de navigation. Ce qui se passe quand vous m’écrivez.",
+      "Ce site ne dépose aucun cookie. Ce que mesurent les deux outils de son hébergeur, et ce qui se passe quand vous m’écrivez.",
     h1: "Confidentialité",
-    lead: "Ce site ne vous suit pas. Voici ce que ça veut dire concrètement.",
+    lead: "Ce site ne vous suit pas d’un site à l’autre et ne vous identifie pas. Voici ce qu’il mesure, et ce qu’il n’enregistre pas.",
 
     sections: [
       {
-        title: "Aucun cookie, aucune mesure d’audience",
+        title: "Aucun cookie",
         body: [
-          "Ce site ne dépose aucun cookie sur votre appareil. Il n’embarque ni Google Analytics, ni aucun autre outil de mesure. Aucune bannière de consentement n’est nécessaire, parce qu’il n’y a rien à consentir.",
-          "Vos pages consultées, votre adresse IP et votre parcours ne sont ni enregistrés ni transmis.",
+          "Ce site ne dépose aucun cookie sur votre appareil. Aucune bannière de consentement n’est nécessaire, parce qu’il n’y a rien à consentir.",
+          "Il n’embarque ni Google Analytics, ni régie publicitaire, ni bouton de réseau social. Rien ici ne vous suit d’un site à l’autre.",
+        ],
+      },
+      {
+        title: "Deux mesures, sans vous identifier",
+        body: [
+          "Le site utilise deux outils de son hébergeur, Vercel. Le premier compte les pages consultées : la page, le pays, le type d’appareil et le site d’où vous venez. Le second relève la vitesse d’affichage réellement obtenue chez vous, pour savoir si le site tient sa promesse ailleurs que sur ma machine.",
+          "Ni l’un ni l’autre ne pose de cookie, ne conserve votre adresse IP ni n’établit d’empreinte de votre navigateur. Les chiffres sont agrégés : je vois qu’une page a été vue trente fois, jamais par qui.",
+          "Vous pouvez les bloquer avec n’importe quel bloqueur de contenu. Le site fonctionne exactement pareil.",
         ],
       },
       {
@@ -126,7 +137,7 @@ export const legalPages = {
       {
         title: "Hébergement",
         body: [
-          "Le site est hébergé par Vercel. Comme tout hébergeur, Vercel tient des journaux techniques de connexion pour assurer le service et sa sécurité. Je n’y ai pas accès à des fins d’analyse et je n’en tire aucun profil.",
+          "Le site est hébergé par Vercel, qui fournit aussi les deux outils de mesure décrits plus haut. Comme tout hébergeur, Vercel tient des journaux techniques de connexion pour assurer le service et sa sécurité. Je n’y ai pas accès à des fins d’analyse et je n’en tire aucun profil.",
         ],
       },
     ],

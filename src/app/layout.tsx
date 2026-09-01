@@ -1,3 +1,6 @@
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+
 import type { Metadata, Viewport } from "next";
 
 import { site } from "@/content/site";
@@ -35,7 +38,19 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang={site.lang} className={fontVariables}>
-      <body>{children}</body>
+      <body>
+        {children}
+
+        {/* Mesure d'audience et de performance réelle, chargées après le
+            contenu. Speed Insights relève les Web Vitals des vrais visiteurs :
+            un score Lighthouse est une mesure de laboratoire sur une machine
+            au repos, il ne dit rien de ce que vit quelqu'un en 4G. Les deux
+            sont sans cookie et sont décrites dans la politique de
+            confidentialité — l'ajouter sans l'y écrire rendrait cette page
+            fausse. */}
+        <Analytics />
+        <SpeedInsights />
+      </body>
     </html>
   );
 }
