@@ -66,7 +66,7 @@ export const legalPages = {
       {
         title: "Responsabilité",
         body: [
-          "Le prestataire est tenu à une obligation de moyens. Sa responsabilité ne peut être engagée pour un dommage indirect — perte de chiffre d’affaires, perte de données consécutive à une manipulation du client.",
+          "Le prestataire est tenu à une obligation de moyens. Sa responsabilité ne peut être engagée pour un dommage indirect : perte de chiffre d’affaires, perte de données consécutive à une manipulation du client.",
           "Le client est seul responsable des contenus qu’il fournit : textes, images, et des droits qui s’y attachent.",
         ],
       },

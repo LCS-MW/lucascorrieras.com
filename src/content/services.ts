@@ -23,7 +23,7 @@ export const services = {
    * offres, pas dessus : elle répond à la question qu'on se pose après avoir
    * lu ce qu'on obtient, pas avant.
    */
-  floorNote: `Les projets démarrent à ${floorLabel}. Le montant exact dépend du nombre de pages et de ce que le site doit savoir faire — il est arrêté par écrit avant de commencer.`,
+  floorNote: `Les projets démarrent à ${floorLabel}. Le montant exact dépend du nombre de pages et de ce que le site doit savoir faire. Il est arrêté par écrit avant de commencer.`,
 
   items: [
     {

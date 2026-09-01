@@ -160,7 +160,7 @@ export default async function ProjectPage({
           {project.answers.map((answer, index) => (
             <li
               key={answer.title}
-              className="grid gap-4 py-10 md:grid-cols-12 md:gap-8"
+              className="grid items-center gap-4 py-10 md:grid-cols-12 md:gap-8"
             >
               <span className="font-mono text-label text-accent uppercase md:col-span-1">
                 {String(index + 1).padStart(2, "0")}

@@ -17,7 +17,7 @@ export const errors = {
     label: "Page introuvable",
     code: "404",
     title: "Cette adresse ne mène nulle part.",
-    lead: "Soit elle a été mal recopiée, soit la page n’existe plus. Rien de grave — voici par où reprendre.",
+    lead: "Soit elle a été mal recopiée, soit la page n’existe plus. Rien de grave. Voici par où reprendre.",
     actions: {
       primary: { label: "Retour à l’accueil", href: "/" },
       secondary: { label: "Voir les services", href: "/services" },
@@ -29,7 +29,7 @@ export const errors = {
     label: "Erreur inattendue",
     code: "500",
     title: "Quelque chose a cassé de mon côté.",
-    lead: "Ce n’est pas vous. Une erreur s’est produite pendant l’affichage de cette page. Réessayez — si ça recommence, écrivez-moi et je regarde.",
+    lead: "Ce n’est pas vous. Une erreur s’est produite pendant l’affichage de cette page. Réessayez. Si ça recommence, écrivez-moi et je regarde.",
     retry: "Réessayer",
     contact: { label: "M’écrire", href: "/contact" } satisfies Action,
     /** Précède l'identifiant de trace, quand il existe. */

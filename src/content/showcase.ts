@@ -27,7 +27,7 @@ export const showcase = {
    * et remplacé par cette description, qui dit la même chose en une phrase.
    */
   description:
-    "Une page de menuisier passe de son plan annoté — blocs gris, contours pointillés, cotes et libellés — à sa version livrée, avec ses couleurs, ses titres et son contenu.",
+    "Une page de menuisier passe de son plan annoté à sa version livrée. Le plan montre des blocs gris, des contours pointillés, des cotes et des libellés. La version livrée a ses couleurs, ses titres et son contenu.",
 
   /** Faux écran de site, utilisé comme sujet de la démonstration. */
   screen: {

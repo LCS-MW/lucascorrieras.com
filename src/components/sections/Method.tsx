@@ -34,9 +34,15 @@ export function Method({ tone = "paper" }: { tone?: SectionTone }) {
               />
 
               <div className="mask-y">
+                {/* Chaque colonne centrée sur la médiane de la rangée.
+                      Le numéro tient sur une ligne, le titre sur une ou deux,
+                      le corps sur trois : aligner par le haut ou par la ligne
+                      de base fait sauter le numéro d'une rangée à l'autre. Le
+                      centre est la seule référence qui ne dépend pas de la
+                      hauteur du contenu. */}
                 <div
                   data-reveal="row-body"
-                  className="grid gap-4 py-10 md:grid-cols-12 md:gap-8"
+                  className="grid items-center gap-4 py-10 md:grid-cols-12 md:gap-8"
                 >
                   <span
                     data-count={Number(step.number)}

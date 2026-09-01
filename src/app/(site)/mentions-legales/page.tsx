@@ -83,9 +83,8 @@ export default function MentionsLegalesPage() {
           Ce site est hébergé par {legal.host.name}, {legal.host.address}.
         </p>
         <p className="text-base text-ink-2 mt-4 max-w-2xl">
-          L’ensemble du contenu de {site.domain} — textes, images, code — est
-          protégé par le droit d’auteur. Toute reproduction sans accord écrit
-          est interdite.
+          Les textes, les images et le code de {site.domain} sont protégés par
+          le droit d’auteur. Toute reproduction sans accord écrit est interdite.
         </p>
       </Section>
     </>
