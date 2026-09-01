@@ -47,7 +47,7 @@ export const site = {
   email: "lcs@lucascorrieras.com",
 
   /** Format lisible. `null` = ligne masquée partout. */
-  phone: "06 18 05 39 46" as string | null,
+  phone: "06 18 05 39 48" as string | null,
 
   /**
    * Siège déclaré. Il figure dans les mentions légales parce que la loi
