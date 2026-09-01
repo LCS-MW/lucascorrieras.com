@@ -41,6 +41,49 @@ export const contact = {
     ],
   },
 
+  /**
+   * Formulaire. Il ne s'affiche que si `RESEND_API_KEY` est renseignée : sans
+   * quoi la page retombe sur le courriel et le téléphone, qui, eux, marchent.
+   */
+  form: {
+    title: "Écrire directement",
+    lead: "Trois champs, et vous n’avez pas à ouvrir votre messagerie. Je reçois le message tel quel.",
+    fields: {
+      name: { label: "Votre nom", placeholder: "Marie Vasseur" },
+      email: {
+        label: "Votre courriel",
+        placeholder: "marie@atelier-vasseur.fr",
+      },
+      trade: {
+        label: "Votre métier",
+        hint: "facultatif",
+        placeholder: "Menuisière",
+      },
+      message: {
+        label: "Votre message",
+        placeholder:
+          "Ce que vous faites, ce que le site doit permettre, et votre échéance si vous en avez une.",
+      },
+    },
+    submit: "Envoyer",
+    sending: "Envoi…",
+    /** Le piège à robots : un champ que personne ne voit et que seul un automate remplit. */
+    honeypot: { name: "site", label: "Ne remplissez pas ce champ" },
+    success:
+      "Message reçu. Je vous réponds à l’adresse que vous avez indiquée.",
+    errors: {
+      name: "Indiquez un nom, même un prénom seul.",
+      email: "Cette adresse ne ressemble pas à une adresse courriel.",
+      message:
+        "Écrivez au moins une phrase, sinon je ne saurai pas quoi répondre.",
+      failed:
+        "L’envoi a échoué de mon côté. Écrivez-moi directement à l’adresse ci-dessus, le message arrivera.",
+    },
+    /** Sous les champs : ce que devient le message. */
+    notice:
+      "Votre message part dans ma boîte mail. Rien n’est stocké sur le site, rien n’est transmis à un tiers.",
+  },
+
   next: {
     title: "Ce qui se passe ensuite",
     steps: [

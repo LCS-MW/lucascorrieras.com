@@ -55,7 +55,7 @@ export const legalPages = {
         title: "Prix et paiement",
         body: [
           "Les prix sont en euros. TVA non applicable, article 293 B du code général des impôts.",
-          "Un acompte de 30 % à 40 % est versé à la commande, à un taux précisé sur le devis. Le solde est dû à la livraison ou à la mise en ligne.",
+          "Un acompte de 30 % est versé à la commande. Le solde est dû à la livraison ou à la mise en ligne.",
           "En cas de retard de paiement, des pénalités égales à trois fois le taux d’intérêt légal sont exigibles de plein droit, sans mise en demeure préalable, ainsi qu’une indemnité forfaitaire de 40 € pour frais de recouvrement.",
         ],
       },
@@ -123,8 +123,9 @@ export const legalPages = {
       {
         title: "Quand vous m’écrivez",
         body: [
-          "Il n’y a pas de formulaire sur ce site : vous m’écrivez par courriel, depuis votre propre messagerie. Je reçois donc votre adresse et ce que vous avez choisi de me dire.",
-          "Je conserve ces échanges le temps de la relation, et les documents comptables le temps que la loi impose. Rien n’est revendu, rien n’est transmis à un tiers à des fins commerciales.",
+          "Vous pouvez m’écrire par courriel depuis votre propre messagerie, ou passer par le formulaire de la page contact. Dans les deux cas je reçois votre adresse et ce que vous avez choisi de me dire.",
+          "Le formulaire n’enregistre rien sur le site : il transmet votre message à ma boîte mail par l’intermédiaire de Resend, un service d’acheminement de courriel. Le message y transite, il n’y est pas conservé pour être exploité.",
+          "Je garde ces échanges le temps de la relation, et les documents comptables le temps que la loi impose. Rien n’est revendu, rien n’est transmis à un tiers à des fins commerciales.",
         ],
       },
       {

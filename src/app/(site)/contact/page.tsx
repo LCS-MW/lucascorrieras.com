@@ -1,3 +1,4 @@
+import { ContactForm } from "@/components/sections/ContactForm";
 import { Button } from "@/components/ui/Button";
 import { PageEntrance } from "@/components/motion/PageEntrance";
 import { Section } from "@/components/ui/Section";
@@ -8,6 +9,16 @@ import { pageMetadata } from "@/lib/metadata";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = pageMetadata(pages.contact, "/contact");
+
+/**
+ * Le formulaire n'apparaît que si l'envoi est possible.
+ *
+ * `RESEND_API_KEY` est lue au moment de la compilation : sa seule présence est
+ * évaluée, jamais sa valeur, et rien n'en sort dans le HTML. Sans clé, la page
+ * garde le courriel et le téléphone — un formulaire qui n'envoie rien coûte
+ * plus cher qu'une adresse qui marche.
+ */
+const ENVOI_POSSIBLE = Boolean(process.env.RESEND_API_KEY);
 
 export default function ContactPage() {
   return (
@@ -89,7 +100,19 @@ export default function ContactPage() {
         </Section>
       </PageEntrance>
 
-      <Section tone="soft">
+      {ENVOI_POSSIBLE ? (
+        <Section tone="soft">
+          <h2 className="font-display text-display-sm text-ink">
+            {contact.form.title}
+          </h2>
+          <p className="text-base text-ink-2 mt-5 max-w-xl">
+            {contact.form.lead}
+          </p>
+          <ContactForm />
+        </Section>
+      ) : null}
+
+      <Section tone={ENVOI_POSSIBLE ? "paper" : "soft"}>
         <div className="grid gap-16 md:grid-cols-2">
           <div>
             <h2 className="font-display text-display-sm text-ink">
