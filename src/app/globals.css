@@ -1,0 +1,676 @@
+@import "tailwindcss";
+@import "lenis/dist/lenis.css";
+
+/* ==========================================================================
+   Tokens de design — source unique de vérité (cf. CLAUDE.md).
+   Les espaces de noms sont remis à `initial` avant d'être redéfinis : ce qui
+   n'est pas un token du site n'existe pas comme classe utilitaire. Écrire
+   `bg-white`, `rounded-xl` ou `shadow-lg` provoque une erreur de compilation
+   plutôt qu'une couleur ou une forme improvisée.
+   ========================================================================== */
+
+@theme {
+  /* --- Couleurs --------------------------------------------------------- */
+  /* Une seule couleur d'accent sur tout le site. Aucun dégradé décoratif. */
+  --color-*: initial;
+
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --color-paper: #f2f3ef; /* fond principal, gris-papier froid */
+  --color-surface: #e9eae4; /* gris de maquette — plus utilisé en section */
+  --color-ink: #14171a; /* texte principal */
+  --color-ink-2: #5c6360; /* texte secondaire */
+  --color-accent: #1b3bd4; /* bleu signal, couleur unique */
+  --color-accent-soft: #e2e6fa; /* sections alternées, texte sur fond sombre */
+
+  /* Même teinte que l'accent (228°), assombrie et désaturée : le fond profond
+     du site n'est pas un noir neutre, c'est le bleu poussé au bout. */
+  --color-depth: #0c1330;
+
+  /* Les filets ne sont plus gris : c'est l'accent à 20 %, qui se compose sur
+     le fond de la section. Sur fond sombre, on utilise `border-paper/20`. */
+  --color-rule: color-mix(in oklab, var(--color-accent) 20%, transparent);
+
+  /* --- Graisses --------------------------------------------------------- */
+  /* Display 600, texte 400/500. Rien d'autre. */
+  --font-weight-*: initial;
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+
+  /* --- Échelle typographique -------------------------------------------- */
+  /* Les règles de CLAUDE.md sont embarquées dans les tokens : `text-display`
+     porte déjà sa graisse, son interlignage et son approche, on ne les
+     rejoue pas à la main dans les composants. */
+  --text-*: initial;
+
+  --text-label: 0.6875rem; /* étiquettes mono, cotes, libellés */
+  --text-label--line-height: 1.1;
+  --text-label--letter-spacing: 0.14em;
+
+  --text-sm: 0.8125rem;
+  --text-sm--line-height: 1.5;
+
+  --text-base: 1rem;
+  --text-base--line-height: 1.55;
+
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.5;
+
+  --text-xl: 1.375rem;
+  --text-xl--line-height: 1.4;
+
+  --text-display-sm: clamp(1.5rem, 2.4vw, 2rem);
+  --text-display-sm--line-height: 1.02;
+  --text-display-sm--letter-spacing: -0.035em;
+  --text-display-sm--font-weight: 600;
+
+  --text-display: clamp(2.25rem, 6vw, 4rem);
+  --text-display--line-height: 1.02;
+  --text-display--letter-spacing: -0.035em;
+  --text-display--font-weight: 600;
+
+  --text-display-lg: clamp(3rem, 9vw, 6.5rem);
+  --text-display-lg--line-height: 1.02;
+  --text-display-lg--letter-spacing: -0.035em;
+  --text-display-lg--font-weight: 600;
+
+  /* --- Approches et interlignages nommés -------------------------------- */
+  /* Redondants avec les tokens ci-dessus, mais nécessaires quand on applique
+     l'approche display ou étiquette à une taille qui n'est pas la sienne. */
+  /* Révélations au scroll et micro-interactions : une sortie franche, qui
+     démarre vite et se pose. C'est l'ease du site partout ailleurs. */
+  --ease-reveal: cubic-bezier(0.165, 0.84, 0.44, 1);
+
+  /* Transitions de page. Un ease-out y démarre trop brutalement : sur un objet
+     qui se déplace d'un point à un autre, l'œil suit la trajectoire et lit le
+     départ instantané comme une saccade. Celui-ci accélère et décélère, donc
+     l'objet paraît avoir une masse. */
+  --ease-transit: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --tracking-display: -0.035em;
+  --tracking-label: 0.14em;
+  --leading-display: 1.02;
+
+  /* --- Rayons ----------------------------------------------------------- */
+  /* 2px maximum. Pas d'arrondis mous. */
+  --radius-*: initial;
+
+  --radius-xs: 1px;
+  --radius-sm: 2px;
+
+  /* --- Ombres ----------------------------------------------------------- */
+  /* Aucune ombre portée diffuse : les séparations se font au filet 1px. */
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+  --text-shadow-*: initial;
+}
+
+/* Les familles pointent vers les variables posées par next/font sur <html>.
+   `@theme inline` résout la référence au point d'usage, ce qui garde le lien
+   valide quelle que soit la position du bloc dans l'arbre. */
+@theme inline {
+  --font-*: initial;
+
+  --font-display:
+    var(--font-bricolage-grotesque), ui-sans-serif, system-ui, sans-serif;
+  --font-text: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-ibm-plex-mono), ui-monospace, monospace;
+  --font-sans: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ==========================================================================
+   Socle
+   ========================================================================== */
+
+@layer base {
+  html {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Lenis pilote le défilement : laisser `smooth` ici ferait entrer en
+       conflit le lissage natif et le nôtre. */
+    scroll-behavior: auto;
+  }
+
+  body {
+    font-family: var(--font-text);
+    font-weight: var(--font-weight-normal);
+    font-size: var(--text-base);
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background-color: var(--color-accent);
+    color: var(--color-paper);
+  }
+}
+
+/* Focus visible sur tout ce qui est interactif, sans exception.
+   Volontairement hors de toute couche : une règle dans `@layer base` serait
+   battue par la couche des utilitaires, et il suffirait d'une classe posée
+   sur un lien pour faire sauter son indicateur de focus.
+   `transition-duration: 0s` parce que `transition-colors` inclut
+   `outline-color` : sans ça, le contour apparaîtrait en fondu sur 150 ms
+   alors qu'un indicateur de focus doit être immédiat. */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  transition-duration: 0s;
+}
+
+/* Sur les deux fonds sombres, l'accent ne donne que 2,3:1 — sous le minimum
+   de 3:1 exigé pour un indicateur. L'anneau et la sélection passent au papier,
+   qui remonte à 7,2:1 sur l'accent et 16,4:1 sur le fond profond. */
+[data-tone="dark"] :focus-visible {
+  outline-color: var(--color-paper);
+}
+
+[data-tone="dark"] ::selection {
+  background-color: var(--color-paper);
+  color: var(--color-accent);
+}
+
+/* Soulignement qui se trace de gauche à droite au survol. Un pseudo-élément
+   plutôt qu'un `background-image` : pas de dégradé, même à couleur unique, et
+   l'animation reste sur `scale` seul. */
+.link-underline {
+  position: relative;
+}
+
+.link-underline::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: -0.15em;
+  height: 1px;
+  background-color: var(--color-accent);
+  transform-origin: left center;
+  scale: 0 1;
+  transition: scale 180ms ease-out;
+}
+
+/* Les deux dernières règles servent aux liens dont la zone tactile est plus
+   grande que le texte : le trait est posé sur un span intérieur, mais c'est le
+   lien entier qui le déclenche. */
+.link-underline:hover::after,
+.link-underline:focus-visible::after,
+a:hover .link-underline::after,
+a:focus-visible .link-underline::after {
+  scale: 1 1;
+}
+
+/* ---- Navigation principale -------------------------------------------- */
+
+/* Le soulignement n'est rendu que dans le lien actif, et c'est tout : sa
+   position et sa largeur d'une page à l'autre sont interpolées par le
+   navigateur, parce qu'il porte le même nom de transition des deux côtés.
+   Aucune mesure, aucun tween — voir la section « Transitions de page ». */
+.nav-underline {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  height: 1px;
+  background-color: var(--color-accent);
+}
+
+/* Le survol dit autre chose que l'état actif : deux filets d'accent viennent
+   encadrer le libellé, de part et d'autre et légèrement en dehors, puis se
+   resserrent de 4 px vers le texte. C'est le geste d'une sélection qui se pose
+   sur un mot — le vocabulaire du site — et non un second soulignement.
+
+   Deux pseudo-éléments plutôt que deux nœuds : ils n'existent que dans la
+   feuille de style, et le libellé reste un nœud de texte nu dans le lien.
+
+   Le texte, lui, ne bouge pas et ne change pas de graisse : seule sa couleur
+   passe de `--ink-2` à `--ink`. Un déplacement au survol sur quatre liens
+   voisins ferait respirer toute la barre. */
+.nav-link {
+  transition: color 220ms var(--ease-reveal);
+}
+
+.nav-link::before,
+.nav-link::after {
+  content: "";
+  position: absolute;
+  inset-block-start: 50%;
+  width: 1px;
+  /* ~60 % de la hauteur du libellé : assez pour se lire comme un repère, pas
+     assez pour concurrencer le soulignement du lien actif. */
+  height: 0.75em;
+  background-color: var(--color-accent);
+  opacity: 0;
+  /* `translate` séparé de `transform` : le centrage vertical et le
+     rapprochement horizontal vivent dans la même propriété sans se réécrire. */
+  transition:
+    opacity 220ms var(--ease-reveal),
+    translate 220ms var(--ease-reveal);
+}
+
+.nav-link::before {
+  inset-inline-start: -10px;
+  translate: 0 -50%;
+}
+
+.nav-link::after {
+  inset-inline-end: -10px;
+  translate: 0 -50%;
+}
+
+.nav-link:hover::before,
+.nav-link:focus-visible::before {
+  opacity: 1;
+  translate: 4px -50%;
+}
+
+.nav-link:hover::after,
+.nav-link:focus-visible::after {
+  opacity: 1;
+  translate: -4px -50%;
+}
+
+/* Le lien actif ne réagit pas : il porte déjà le soulignement, et annoncer une
+   destination sur laquelle on se trouve déjà n'a pas de sens. */
+.nav-link[aria-current="page"]::before,
+.nav-link[aria-current="page"]::after {
+  content: none;
+}
+
+.nav-link:not([aria-current="page"]):hover,
+.nav-link:not([aria-current="page"]):focus-visible {
+  color: var(--color-ink);
+}
+
+/* Lien d'évitement : premier élément focalisable du document. Il reste dans le
+   flux et hors du viewport par translation — donc focalisable, et déplacé sur
+   `translate` seul, comme tout le reste du site. */
+.skip-link {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 50;
+  margin: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-accent);
+  color: var(--color-paper);
+  translate: 0 -160%;
+  transition: translate 150ms ease-out;
+}
+
+/* `:focus` et non `:focus-visible` : le lien doit se montrer quelle que soit
+   la manière dont il reçoit le focus, sans quoi il peut rester hors écran tout
+   en étant l'élément actif. */
+.skip-link:focus {
+  translate: 0 0;
+}
+
+/* ==========================================================================
+   Séquence d'entrée
+   ========================================================================== */
+
+/* Le hero garde un état de départ en CSS — c'est le seul endroit au-dessus de
+   la ligne de flottaison, un flash y serait visible. Mais il est conditionné à
+   `html[data-gsap]`, posé à l'évaluation du module GSAP : si le moteur ne se
+   charge pas, rien n'est masqué. */
+@media (not (prefers-reduced-motion: reduce)) {
+  html[data-gsap] [data-intro-root] [data-intro-from="scale-x"] {
+    transform: scaleX(0);
+  }
+
+  html[data-gsap] [data-intro-root] [data-intro-from="scale-y"] {
+    transform: scaleY(0);
+  }
+
+  html[data-gsap] [data-intro-root] [data-intro-from="fade"] {
+    opacity: 0;
+  }
+
+  html[data-gsap] [data-intro-root] [data-intro-from="pop"] {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+
+/* SplitText pose un masque qui épouse exactement la boîte de ligne. Avec un
+   interlignage de 1.02, la jambe du « p » n'a plus que 0,5 px de marge avant
+   le bord de rognage : l'anticrénelage suffit à la raboter. `overflow-clip-
+   margin` élargit la zone visible sans rien changer à la mise en page. Les
+   navigateurs qui l'ignorent retombent sur le comportement actuel. */
+.intro-line-mask {
+  overflow-clip-margin: 0.08em;
+}
+
+/* ==========================================================================
+   Section maquette → site
+   ========================================================================== */
+
+/* Tout l'écran se calcule à partir d'un seul scalaire : 0 = maquette annotée,
+   1 = site livré. Aucune propriété n'est animée en JS : piloter la section au
+   scroll reviendra à faire varier cette seule valeur, ce qui rend la
+   transformation continue et réversible par construction. */
+[data-showcase] {
+  --showcase-progress: 0;
+  --showcase-wire: color-mix(in oklab, var(--color-ink-2) 30%, transparent);
+}
+
+[data-showcase] [data-showcase-wire] {
+  opacity: calc(1 - var(--showcase-progress));
+}
+
+[data-showcase] [data-showcase-real] {
+  opacity: var(--showcase-progress);
+  translate: 0 calc((1 - var(--showcase-progress)) * 6px);
+}
+
+/* Le fond de l'écran et le remplissage du bouton ne se croisent pas : ils
+   passent d'une teinte à l'autre sans jamais être remplacés. */
+[data-showcase] [data-showcase-screen] {
+  background-color: color-mix(
+    in oklab,
+    var(--color-paper) calc(var(--showcase-progress) * 100%),
+    var(--color-surface)
+  );
+}
+
+[data-showcase] [data-showcase-fill] {
+  background-color: color-mix(
+    in oklab,
+    var(--color-accent) calc(var(--showcase-progress) * 100%),
+    var(--showcase-wire)
+  );
+}
+
+[data-showcase] [data-showcase-bar] {
+  scale: var(--showcase-progress) 1;
+}
+
+/* Les annotations ne restent pas posées : chacune a sa fenêtre d'apparition et
+   de disparition, déclarée en variables sur l'élément. Les `--*-span` sont
+   l'inverse de la durée, car diviser par une variable en CSS n'est pas fiable
+   partout — on multiplie. */
+[data-showcase] [data-showcase-annotation] {
+  opacity: calc(
+    clamp(0, (var(--showcase-progress) - var(--in-from)) * var(--in-span), 1) *
+      (
+        1 -
+          clamp(
+            0,
+            (var(--showcase-progress) - var(--out-from)) * var(--out-span),
+            1
+          )
+      )
+  );
+}
+
+/* Mouvement réduit : on montre directement l'état d'arrivée. */
+@media (prefers-reduced-motion: reduce) {
+  [data-showcase] {
+    --showcase-progress: 1;
+  }
+}
+
+/* ==========================================================================
+   Entrées de section
+   ========================================================================== */
+
+/* Masque de révélation. `clip` plutôt que `hidden`, avec une marge : sans
+   elle, l'anneau de focus d'un lien contenu dans le bloc serait rogné. */
+.mask-y {
+  overflow: clip;
+  overflow-clip-margin: 6px;
+}
+
+/* Les sections animées ne posent plus aucun état de départ ici : chaque
+   révélation est un `fromTo`, et c'est le tween qui masque au moment de sa
+   création. Un état masqué écrit en CSS survivrait à l'échec de GSAP et
+   laisserait le contenu invisible pour toujours — c'est exactement ce qui
+   s'était produit. */
+
+/* ==========================================================================
+   Aperçu de réalisation
+   ========================================================================== */
+
+/* Enregistré pour être interpolable : sans `@property`, une variable
+   personnalisée saute d'une valeur à l'autre au lieu de transiter. */
+@property --preview-progress {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+[data-preview] {
+  --preview-progress: 0;
+  transition: --preview-progress 320ms ease-out;
+}
+
+[data-preview] [data-preview-wire] {
+  opacity: calc(1 - var(--preview-progress));
+}
+
+/* Le passage filaire → fini est une affaire de survol : au doigt, il n'y a pas
+   de survol, l'aperçu reste donc à son état fini. */
+@media (hover: hover) and (pointer: fine) {
+  a:hover [data-preview],
+  a:focus-visible [data-preview] {
+    --preview-progress: 1;
+  }
+}
+
+@media not all and (hover: hover), not all and (pointer: fine) {
+  [data-preview] {
+    --preview-progress: 1;
+  }
+}
+
+/* ==========================================================================
+   En-tête compact
+   ========================================================================== */
+
+/* L'en-tête est fixe et doublé d'une cale de hauteur constante : sa hauteur
+   peut donc varier sans jamais déplacer le contenu de la page. Seule la
+   hauteur transite — la position des éléments n'est jamais animée. */
+:root {
+  --header-height-max: 4.75rem;
+  --header-height-min: 3.25rem;
+}
+
+[data-header] {
+  position: fixed;
+  inset-inline: 0;
+  top: 0;
+  z-index: 40;
+  height: var(--header-height-max);
+  background-color: var(--color-paper);
+  transition: height 220ms ease-out;
+}
+
+[data-header][data-compact="true"] {
+  height: var(--header-height-min);
+}
+
+[data-header-spacer] {
+  height: var(--header-height-max);
+}
+
+/* Mouvement réduit : état final immédiat, jamais un ralentissement. Le filet
+   de sécurité CSS double la logique JS de `useReducedMotion`, pour tout ce qui
+   anime en CSS sans passer par GSAP. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ==========================================================================
+   Transitions de page
+   ========================================================================== */
+
+/* Chaque élément persistant reçoit son propre nom de transition : il est ainsi
+   sorti de l'instantané du contenu et ne bouge pas d'une page à l'autre. Seul
+   le contenu principal transite. */
+[data-header] {
+  view-transition-name: entete;
+}
+
+footer {
+  view-transition-name: pied;
+}
+
+main {
+  view-transition-name: contenu;
+}
+
+/* Le soulignement porte le même nom dans les deux pages, mais il n'est rendu
+   que dans le lien actif : il n'existe donc jamais deux fois à la fois. Son
+   groupe garde une animation — c'est elle qui produit le glissement, et la
+   figer comme l'en-tête supprimerait tout le mouvement. */
+.nav-underline {
+  view-transition-name: soulignement;
+}
+
+::view-transition-group(soulignement) {
+  animation-duration: 0.55s;
+  animation-timing-function: var(--ease-transit);
+}
+
+/* Le fondu croisé par défaut est laissé en place, volontairement. Entre deux
+   traits unis identiques il est invisible — les deux captures se superposent
+   exactement et le mélange additif du moteur maintient l'opacité à 1. Il sert
+   dans l'autre cas : depuis l'accueil, où aucun lien n'est actif, le trait
+   n'existe que d'un côté et doit apparaître ou partir proprement au lieu de
+   surgir d'un coup. */
+
+::view-transition-group(entete),
+::view-transition-group(pied) {
+  animation: none;
+}
+
+/* Sans cette reprise en main, les instantanés sont étirés à la taille du
+   groupe : deux pages de hauteurs différentes produiraient une déformation
+   verticale au lieu d'un simple déplacement. */
+::view-transition-old(contenu),
+::view-transition-new(contenu) {
+  height: auto;
+  width: 100%;
+  overflow: clip;
+}
+
+::view-transition-group(contenu) {
+  animation-duration: 480ms;
+}
+
+/* Rôle secondaire : le fondu-glissé ne porte plus la transition, il sort et
+   rentre ce qui n'a pas d'équivalent dans l'autre page. Sortie 320 ms, entrée
+   480 ms sans retard — les deux se recouvrent, donc 480 ms au total.
+   L'amplitude est de 32 px : à cette durée, une distance plus grande donnerait
+   un glissement mou, une plus courte un mouvement qui n'a pas le temps de se
+   lire. Le contenu reste interactif dès que la route est rendue : l'animation
+   joue sur des instantanés, pas sur lui. */
+::view-transition-old(contenu) {
+  animation: contenu-sortie 320ms var(--ease-transit) both;
+}
+
+::view-transition-new(contenu) {
+  animation: contenu-entree 480ms var(--ease-transit) both;
+}
+
+@keyframes contenu-sortie {
+  to {
+    opacity: 0;
+    transform: translateY(-32px);
+  }
+}
+
+@keyframes contenu-entree {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+}
+
+/* ---- Élément partagé --------------------------------------------------- */
+
+/* Un seul, en plus du soulignement : l'aperçu d'un projet, de la grille vers
+   l'en-tête de sa fiche. C'est le seul endroit du site où le même objet existe
+   dans les deux pages — partout ailleurs, un nom partagé ferait disparaître de
+   son emplacement un élément qui doit y rester.
+
+   Il est désigné par une classe de transition plutôt que par son nom : le nom
+   est unique par projet — `apercu-atelier-vernet` — et il n'existe pas de
+   sélecteur à préfixe pour les pseudo-éléments. Un navigateur qui ignore
+   `view-transition-class` laisse jouer l'animation de groupe par défaut : le
+   morphing a lieu quand même, avec la durée du moteur. */
+.vt-apercu {
+  view-transition-class: apercu;
+}
+
+/* La plus longue durée du site, et la seule au-dessus d'une demi-seconde :
+   c'est le seul élément qui traverse réellement l'écran en changeant de taille,
+   et c'est la distance parcourue qui fixe le temps, pas l'inverse. */
+::view-transition-group(.apercu) {
+  animation-duration: 620ms;
+  animation-timing-function: var(--ease-transit);
+}
+
+/* Sans fondu intermédiaire : la nouvelle capture est opaque dès la première
+   image et recouvre l'ancienne, qui est la même photo. Il ne reste donc que le
+   déplacement et le redimensionnement portés par le groupe. `cover` empêche
+   l'étirement pendant que le cadre passe de 4/3 à 16/9.
+   `isolation: auto` est ce qui rend le recouvrement possible : par défaut la
+   paire est isolée et composée en mélange additif, où une nouvelle capture
+   opaque au-dessus d'une ancienne encore visible délave l'image.
+   L'ancienne garde, elle, un fondu de sortie ordinaire — il ne se voit jamais
+   quand la nouvelle existe, et il sert quand elle n'existe pas : en quittant la
+   grille pour une page sans aperçus, les cartes doivent partir avec le reste du
+   contenu, pas s'effacer d'un coup en laissant des trous. */
+::view-transition-image-pair(.apercu) {
+  isolation: auto;
+}
+
+::view-transition-new(.apercu) {
+  animation: none;
+  opacity: 1;
+  object-fit: cover;
+  object-position: top center;
+}
+
+/* ==========================================================================
+   Entrées de page
+   ========================================================================== */
+
+/* Même contrat que le hero : l'état masqué n'existe que si le moteur est
+   chargé. Sur une navigation interne l'attribut est déjà là, donc la page
+   suivante est masquée dès sa première peinture — aucun clignotement. */
+@media (not (prefers-reduced-motion: reduce)) {
+  html[data-gsap] [data-enter="label"],
+  html[data-gsap] [data-enter="title"],
+  html[data-gsap] [data-enter="lead"],
+  html[data-gsap] [data-enter="body"] {
+    opacity: 0;
+  }
+
+  html[data-gsap] [data-enter="rule"] {
+    transform: scaleX(0);
+  }
+}
+
+/* Mouvement réduit : aucune transition, la nouvelle page paraît directement.
+   Le composant n'intercepte d'ailleurs déjà plus la navigation. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

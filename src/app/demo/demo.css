@@ -1,0 +1,131 @@
+/* ==========================================================================
+   Sites de démonstration
+   ==========================================================================
+
+   Trois identités étrangères au site principal. Elles n'utilisent aucun de ses
+   tokens : chaque démo pose ses propres variables sur son enveloppe, et les
+   pages les consomment par valeurs arbitraires (`bg-[var(--d-bg)]`).
+
+   C'est volontaire. Le but de ces démos est de montrer une amplitude, pas de
+   décliner une direction — elles doivent donc pouvoir sortir des contraintes
+   du site vitrine : dégradés, ombres, arrondis, échelles typographiques
+   propres.
+   ========================================================================== */
+
+.demo {
+  background-color: var(--d-bg);
+  color: var(--d-ink);
+  font-family: var(--d-font-text);
+}
+
+.demo ::selection {
+  background-color: var(--d-accent);
+  color: var(--d-bg);
+}
+
+.demo :focus-visible {
+  outline: 2px solid var(--d-accent);
+  outline-offset: 3px;
+}
+
+.demo-display {
+  font-family: var(--d-font-display);
+}
+
+/* --- Atelier Vernet : bois et crème ------------------------------------- */
+.demo-vernet {
+  --d-bg: #f7f1e6;
+  --d-surface: #efe4d1;
+  --d-ink: #2a1f16;
+  --d-muted: #6b5842;
+  --d-accent: #8a5427;
+  --d-line: #dccdb4;
+  --d-font-display: var(--dv-display), Georgia, serif;
+  --d-font-text: var(--dv-text), system-ui, sans-serif;
+}
+
+/* --- Maison Tessier : palette chaude ------------------------------------ */
+.demo-tessier {
+  --d-bg: #fff8f0;
+  --d-surface: #fbe9d8;
+  --d-ink: #3a1f14;
+  --d-muted: #8a5d48;
+  --d-accent: #bb3e13;
+  --d-line: #f0d9c4;
+  --d-font-display: var(--dt-display), Georgia, serif;
+  --d-font-text: var(--dt-text), system-ui, sans-serif;
+}
+
+/* --- Studio Halage : sombre et minéral ---------------------------------- */
+.demo-halage {
+  --d-bg: #14161a;
+  --d-surface: #1d2126;
+  --d-ink: #e8e6e1;
+  --d-muted: #9ba09c;
+  --d-accent: #8fbfa2;
+  --d-line: #2c3138;
+  --d-font-display: var(--dh-display), system-ui, sans-serif;
+  --d-font-text: var(--dh-text), system-ui, sans-serif;
+}
+
+/* --- Panneaux de bois --------------------------------------------------- */
+/* Les réalisations de menuiserie sont figurées par des panneaux composés, pas
+   par de fausses photos : un site de démonstration ne doit pas laisser croire
+   à un chantier qui n'existe pas. */
+.wood {
+  background-image:
+    repeating-linear-gradient(
+      92deg,
+      color-mix(in oklab, var(--wood-a) 92%, black) 0 3px,
+      var(--wood-a) 3px 11px,
+      color-mix(in oklab, var(--wood-a) 88%, var(--wood-b)) 11px 14px,
+      var(--wood-b) 14px 26px
+    ),
+    linear-gradient(178deg, rgb(0 0 0 / 0.12), rgb(255 255 255 / 0.08));
+}
+
+.wood-noyer {
+  --wood-a: #6f4526;
+  --wood-b: #7d5130;
+}
+
+.wood-chene {
+  --wood-a: #b98d55;
+  --wood-b: #c69b64;
+}
+
+.wood-frene {
+  --wood-a: #d8bb8c;
+  --wood-b: #e3c99e;
+}
+
+/* --- Émaux de céramique ------------------------------------------------- */
+.glaze {
+  background-image:
+    radial-gradient(
+      120% 90% at 30% 20%,
+      rgb(255 255 255 / 0.14),
+      transparent 60%
+    ),
+    linear-gradient(160deg, var(--glaze-a), var(--glaze-b));
+}
+
+.glaze-celadon {
+  --glaze-a: #7fa88f;
+  --glaze-b: #40584c;
+}
+
+.glaze-cendre {
+  --glaze-a: #8a8f93;
+  --glaze-b: #4a4f54;
+}
+
+.glaze-terre {
+  --glaze-a: #a9704e;
+  --glaze-b: #5d3c2a;
+}
+
+.glaze-nuit {
+  --glaze-a: #4b5b73;
+  --glaze-b: #232c3a;
+}
