@@ -21,6 +21,9 @@ export const nav = {
   brand: "Lucas Corrieras",
   /** Premier élément focalisable de la page. */
   skip: { href: "#contenu", label: "Aller au contenu" },
+
+  /** Libellés du menu mobile. */
+  menu: { open: "Ouvrir le menu", close: "Fermer le menu" },
   links: mainLinks,
 };
 

@@ -92,9 +92,7 @@ export default function VasseurDemo() {
               <p className="demo-display text-[1.15rem] font-semibold">
                 {urgent.label}
               </p>
-              <p className="mt-1 max-w-xl text-[0.95rem] opacity-90">
-                {urgent.body}
-              </p>
+              <p className="mt-1 max-w-xl text-[0.95rem]">{urgent.body}</p>
             </div>
             <span className="demo-display rounded-[4px] bg-[var(--d-card)] px-6 py-3 text-[1.1rem] font-bold text-[var(--d-urgent)]">
               {urgent.action}

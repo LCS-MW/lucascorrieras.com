@@ -21,7 +21,7 @@ export function SiteHeader() {
         <div className="mx-auto flex h-full max-w-5xl items-center justify-between gap-8 px-6 md:px-12">
           <TransitionLink
             href="/"
-            className="font-mono text-label text-ink hover:text-accent inline-block py-2 uppercase transition-colors"
+            className="font-mono text-label text-ink hover:text-accent inline-block py-2 whitespace-nowrap uppercase transition-colors"
           >
             <span className="link-underline">{nav.brand}</span>
           </TransitionLink>

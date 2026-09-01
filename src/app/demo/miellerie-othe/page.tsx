@@ -35,7 +35,7 @@ export default function MiellerieDemo() {
               <span key={link}>{link}</span>
             ))}
           </nav>
-          <span className="demo-display rounded-full bg-[var(--d-accent)] px-5 py-2.5 text-[0.95rem] font-semibold text-[var(--d-card)]">
+          <span className="demo-display rounded-full bg-[var(--d-accent)] px-5 py-2.5 text-[0.95rem] font-semibold text-[var(--d-ink)]">
             {nav.action}
           </span>
         </div>

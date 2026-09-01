@@ -144,7 +144,11 @@ export function Showcase() {
                   <span className="font-mono text-label text-ink uppercase">
                     {screen.header.brand}
                   </span>
-                  <span className="flex gap-6">
+                  {/* Sous 30 rem, les trois libellés dépassent du cadre et
+                      sont rognés. Un vrai site y mettrait un menu : la
+                      maquette le montre aussi, c'est plus juste que de couper
+                      le texte. */}
+                  <span className="hidden gap-6 min-[30rem]:flex">
                     {screen.header.links.map((link) => (
                       <span
                         key={link}
@@ -154,6 +158,14 @@ export function Showcase() {
                       </span>
                     ))}
                   </span>
+                  <span
+                    aria-hidden="true"
+                    className="flex w-5 flex-col gap-1 min-[30rem]:hidden"
+                  >
+                    <span className="bg-ink-2 block h-px w-full" />
+                    <span className="bg-ink-2 block h-px w-full" />
+                    <span className="bg-ink-2 block h-px w-full" />
+                  </span>
                 </div>
 
                 <div
@@ -161,10 +173,13 @@ export function Showcase() {
                   className={`flex items-center justify-between gap-8 ${STACK} ${PAD.header}`}
                 >
                   <Bar className="h-2.5 w-32" />
-                  <span className="flex gap-6">
+                  <span className="hidden gap-6 min-[30rem]:flex">
                     <Bar className="h-2.5 w-16" />
                     <Bar className="h-2.5 w-14" />
                     <Bar className="h-2.5 w-12" />
+                  </span>
+                  <span className="flex min-[30rem]:hidden">
+                    <Bar className="h-2.5 w-5" />
                   </span>
                 </div>
 

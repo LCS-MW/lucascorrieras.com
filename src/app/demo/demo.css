@@ -131,7 +131,9 @@
   --d-ink: #14120f;
   --d-muted: #6b6459;
   --d-line: #ddd7cd;
-  --d-accent: #937f52;
+  /* Assombri de #937f52 : à 12 px sur le fond crème, l'ancien laiton ne
+     donnait que 3,69:1 là où le texte courant exige 4,5. */
+  --d-accent: #7a6841;
   --d-card: #ffffff;
   --d-wood-1: #c4a882;
   --d-wood-2: #9d7c53;
@@ -153,7 +155,9 @@
   --d-card: #ffffff;
   --d-honey-1: #f5d371;
   --d-honey-2: #e0a32a;
-  --d-honey-3: #b8760d;
+  /* Assombri de #b8760d : il porte les prix et les horaires, donc du texte,
+     et ne donnait que 3,35:1 sur le fond ambré. */
+  --d-honey-3: #8a5806;
   --d-font-display: var(--font-othe-display), system-ui, sans-serif;
   --d-font-text: var(--font-othe-text), system-ui, sans-serif;
 }
