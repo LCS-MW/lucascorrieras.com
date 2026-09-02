@@ -1,0 +1,92 @@
+<!-- ===========================================================================
+     Gabarit EmailJS — à coller dans le contenu du modèle.
+
+     Tout est en styles en ligne et en tableaux : les clients de messagerie
+     ignorent les feuilles externes, et la moitié d'entre eux ne connaissent ni
+     flexbox ni grid. Aucune police du site n'est chargée — un courriel n'a pas
+     le droit d'aller chercher une ressource — donc chaque famille est suivie
+     de ses substituts système.
+
+     Les cinq variables attendues : nom, courriel, metier, message, reply_to.
+     =========================================================================== -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F2F3EF;margin:0;padding:32px 16px;">
+  <tr>
+    <td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;background-color:#F2F3EF;">
+
+        <!-- Étiquette et filet, comme les en-têtes de section du site -->
+        <tr>
+          <td style="padding-bottom:10px;font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#1B3BD4;">
+            Demande depuis le site
+          </td>
+        </tr>
+        <tr>
+          <td style="border-top:1px solid #C7CEEA;font-size:0;line-height:0;">&nbsp;</td>
+        </tr>
+
+        <!-- Le nom, en display : c'est l'information qu'on lit en premier -->
+        <tr>
+          <td style="padding-top:26px;font-family:'Inter Tight',-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;font-size:30px;line-height:1.1;font-weight:600;letter-spacing:-0.02em;color:#14171A;">
+            {{nom}}
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-top:8px;font-family:'Inter Tight',-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;line-height:1.5;color:#5C6360;">
+            <a href="mailto:{{courriel}}" style="color:#1B3BD4;text-decoration:none;border-bottom:1px solid #1B3BD4;">{{courriel}}</a>
+          </td>
+        </tr>
+
+        <!-- Métier -->
+        <tr>
+          <td style="padding-top:30px;border-top:1px solid #C7CEEA;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="padding-top:22px;font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#5C6360;">
+                  Métier
+                </td>
+              </tr>
+              <tr>
+                <td style="padding-top:8px;font-family:'Inter Tight',-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;line-height:1.55;color:#14171A;">
+                  {{metier}}
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Message -->
+        <tr>
+          <td style="padding-top:26px;font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#5C6360;">
+            Message
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-top:12px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="border-left:1px solid #1B3BD4;padding:2px 0 2px 18px;font-family:'Inter Tight',-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;line-height:1.65;color:#14171A;white-space:pre-wrap;">{{message}}</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Pied : un seul filet, le domaine, rien d'autre -->
+        <tr>
+          <td style="padding-top:38px;border-top:1px solid #C7CEEA;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="padding-top:16px;font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#5C6360;">
+                  lucascorrieras.com
+                </td>
+                <td align="right" style="padding-top:16px;font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#5C6360;">
+                  Formulaire de contact
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>

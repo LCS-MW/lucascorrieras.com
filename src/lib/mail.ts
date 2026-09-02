@@ -55,24 +55,21 @@ export async function sendMessage(message: Message): Promise<void> {
       accessToken: process.env.EMAILJS_PRIVATE_KEY,
 
       /**
-       * Le gabarit EmailJS doit consommer ces noms. Les doublons — `name` et
-       * `from_name`, `email` et `reply_to` — couvrent les deux conventions
-       * qu'EmailJS propose selon la façon dont le gabarit a été créé : les
-       * champs inconnus sont ignorés, mais un champ attendu et absent laisse
-       * un trou dans le message reçu.
+       * Noms fixés, sans alias. La première version en envoyait plusieurs par
+       * champ pour couvrir les conventions d'EmailJS ; le gabarit en attendait
+       * d'autres encore, et le courriel arrivait avec des lignes vides. Mieux
+       * vaut cinq noms décidés ici et un gabarit qui les consomme.
        *
-       * `reply_to` a un sens particulier : EmailJS s'en sert pour l'en-tête de
-       * réponse. Sans lui, répondre depuis la boîte de réception écrirait à
-       * EmailJS et non au visiteur.
+       * `reply_to` a un sens particulier : c'est ce qu'EmailJS place dans
+       * l'en-tête de réponse. Sans lui, répondre depuis la boîte de réception
+       * écrirait à EmailJS et non au visiteur.
        */
       template_params: {
-        from_name: message.name,
-        name: message.name,
-        reply_to: message.email,
-        email: message.email,
-        trade: message.trade || "non précisé",
+        nom: message.name,
+        courriel: message.email,
+        metier: message.trade || "Non précisé",
         message: message.message,
-        to_email: site.email,
+        reply_to: message.email,
       },
     }),
   });
