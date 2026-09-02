@@ -9,10 +9,34 @@
 
      Les cinq variables attendues : nom, courriel, metier, message, reply_to.
      =========================================================================== -->
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F2F3EF;margin:0;padding:32px 16px;">
+
+<!-- Refus du mode sombre. Sans ces trois déclarations, Apple Mail et Outlook
+     appliquent leur propre transformation : ils assombrissent les fonds clairs
+     et éclaircissent les textes, et la direction artistique disparaît. C'est
+     le mécanisme standard, honoré par Apple Mail et Outlook. Gmail sur Android
+     l'ignore : aucun courriel ne peut totalement s'en prémunir. -->
+<meta name="color-scheme" content="light" />
+<meta name="supported-color-schemes" content="light" />
+<style>
+  :root {
+    color-scheme: light;
+    supported-color-schemes: light;
+  }
+  /* Apple Mail transforme en lien tout ce qui ressemble à un domaine ou à une
+     adresse, et lui impose sa couleur. Le pied de page en était bleu souligné
+     alors qu'il doit rester gris. */
+  a[x-apple-data-detectors] {
+    color: inherit !important;
+    text-decoration: none !important;
+    font-size: inherit !important;
+    font-family: inherit !important;
+    font-weight: inherit !important;
+  }
+</style>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#F2F3EF" style="background-color:#F2F3EF;margin:0;padding:32px 16px;">
   <tr>
-    <td align="center">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;background-color:#F2F3EF;">
+    <td align="center" bgcolor="#F2F3EF" style="background-color:#F2F3EF;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#F2F3EF" style="max-width:560px;background-color:#F2F3EF;">
 
         <!-- Étiquette et filet, comme les en-têtes de section du site -->
         <tr>
