@@ -78,8 +78,27 @@ export async function sendMessage(message: Message): Promise<void> {
   });
 
   if (!response.ok) {
-    // Le corps de la réponse peut renvoyer les identifiants en écho : seul le
-    // statut sort d'ici, jamais le texte.
-    throw new Error(`EmailJS a répondu ${response.status}`);
+    /**
+     * Le message d'EmailJS remonte, mais expurgé des quatre identifiants au
+     * cas où l'API les renverrait en écho. Il est indispensable : sans lui, un
+     * refus se présentait comme un échec anonyme, et la seule façon de le
+     * diagnostiquer était d'interroger l'API depuis l'extérieur.
+     *
+     * C'est l'action qui le journalise, côté serveur. Le visiteur, lui, ne
+     * voit jamais que la phrase générique.
+     */
+    const secrets = [
+      process.env.EMAILJS_SERVICE_ID,
+      process.env.EMAILJS_TEMPLATE_ID,
+      process.env.EMAILJS_PUBLIC_KEY,
+      process.env.EMAILJS_PRIVATE_KEY,
+    ].filter((v): v is string => Boolean(v));
+
+    const brut = await response.text().catch(() => "");
+    const detail = secrets
+      .reduce((texte, secret) => texte.replaceAll(secret, "[masqué]"), brut)
+      .slice(0, 300);
+
+    throw new Error(`EmailJS a répondu ${response.status} — ${detail}`);
   }
 }

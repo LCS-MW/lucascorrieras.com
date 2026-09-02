@@ -49,9 +49,21 @@ export async function submitContact(
 
   try {
     await sendMessage(values);
-  } catch {
-    // Le détail de la panne reste au serveur : il ne dit rien d'utile au
-    // visiteur et peut porter des informations d'infrastructure.
+  } catch (erreur) {
+    /**
+     * Journalisé côté serveur, donc lisible dans les logs de fonction de
+     * l'hébergeur — jamais renvoyé au visiteur, à qui le détail ne sert à rien
+     * et à qui il révélerait l'infrastructure.
+     *
+     * Ni le message du visiteur ni son adresse n'entrent dans ce journal : ce
+     * serait consigner une donnée personnelle pour rien, et la politique de
+     * confidentialité dit que le formulaire n'enregistre rien.
+     */
+    console.error(
+      "[contact] envoi impossible :",
+      erreur instanceof Error ? erreur.message : "cause inconnue",
+    );
+
     return {
       status: "error",
       errors: { form: contact.form.errors.failed },
