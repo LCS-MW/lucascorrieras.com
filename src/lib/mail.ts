@@ -1,5 +1,3 @@
-import { site } from "@/content/site";
-
 /**
  * Envoi d'un courriel par l'API REST d'EmailJS.
  *
