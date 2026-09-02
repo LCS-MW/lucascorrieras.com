@@ -1,25 +1,39 @@
 import { site } from "@/content/site";
 
 /**
- * Envoi d'un courriel par l'API REST de Resend.
+ * Envoi d'un courriel par l'API REST d'EmailJS.
  *
- * Appelée directement par `fetch`, sans le paquet npm : c'est une requête
- * POST avec un objet JSON, et CLAUDE.md interdit d'ajouter une dépendance qui
- * n'est pas nécessaire. Changer de fournisseur ne touchera que ce fichier.
+ * Appelée directement par `fetch`, sans le paquet npm : c'est une requête POST
+ * avec un objet JSON, et CLAUDE.md interdit d'ajouter une dépendance qui n'est
+ * pas nécessaire. Changer de fournisseur ne touchera que ce fichier.
  *
- * `RESEND_API_KEY` n'est jamais lue ailleurs, et sa seule *présence* décide si
- * le formulaire s'affiche — voir la page contact. Sans clé, aucun formulaire
- * n'est rendu : un formulaire qui n'envoie rien coûte plus cher qu'une adresse
- * qui marche.
+ * ⚠️ L'appel se fait **côté serveur**, depuis l'action du formulaire, et non
+ * depuis le navigateur comme le fait l'intégration habituelle d'EmailJS. Deux
+ * raisons : la clé publique ne part pas dans le paquet client, et la
+ * validation comme le piège à robots restent hors de portée du visiteur. Un
+ * formulaire validé uniquement côté client se contourne avec un `curl`.
+ *
+ * Ce mode exige d'activer « API calls from non-browser applications » dans le
+ * compte EmailJS et de fournir la clé privée en `accessToken`. Sans elle,
+ * l'API répond 403.
+ *
+ * Les quatre valeurs vivent en variables d'environnement et non dans le code.
+ * Les trois premières sont « publiques par conception » chez EmailJS — elles
+ * voyagent dans le navigateur sur une intégration classique — mais le dépôt
+ * est public : les y écrire les republierait durablement.
  */
 
-/**
- * Expéditeur technique. Resend n'accepte un domaine que s'il est vérifié chez
- * lui ; tant que `lucascorrieras.com` ne l'est pas, `onboarding@resend.dev`
- * est la seule adresse autorisée et les messages ne peuvent partir que vers
- * l'adresse du compte Resend.
- */
-const FROM = process.env.RESEND_FROM ?? "onboarding@resend.dev";
+const ENDPOINT = "https://api.emailjs.com/api/v1.0/email/send";
+
+/** Les quatre variables doivent être présentes ensemble, sinon rien n'est envoyé. */
+export function canSend(): boolean {
+  return Boolean(
+    process.env.EMAILJS_SERVICE_ID &&
+    process.env.EMAILJS_TEMPLATE_ID &&
+    process.env.EMAILJS_PUBLIC_KEY &&
+    process.env.EMAILJS_PRIVATE_KEY,
+  );
+}
 
 export type Message = {
   name: string;
@@ -29,39 +43,43 @@ export type Message = {
 };
 
 export async function sendMessage(message: Message): Promise<void> {
-  const key = process.env.RESEND_API_KEY;
-  if (!key) throw new Error("RESEND_API_KEY absente");
+  if (!canSend()) throw new Error("Configuration EmailJS incomplète");
 
-  const corps = [
-    `Nom      : ${message.name}`,
-    `Courriel : ${message.email}`,
-    message.trade ? `Métier   : ${message.trade}` : null,
-    "",
-    message.message,
-  ]
-    .filter((ligne) => ligne !== null)
-    .join("\n");
-
-  const response = await fetch("https://api.resend.com/emails", {
+  const response = await fetch(ENDPOINT, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${key}`,
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      from: `${site.name} — site <${FROM}>`,
-      to: [site.email],
-      // La réponse part vers le visiteur, pas vers l'expéditeur technique :
-      // sans ça, répondre depuis sa boîte écrirait à Resend.
-      reply_to: message.email,
-      subject: `Demande depuis le site — ${message.name}`,
-      text: corps,
+      service_id: process.env.EMAILJS_SERVICE_ID,
+      template_id: process.env.EMAILJS_TEMPLATE_ID,
+      user_id: process.env.EMAILJS_PUBLIC_KEY,
+      accessToken: process.env.EMAILJS_PRIVATE_KEY,
+
+      /**
+       * Le gabarit EmailJS doit consommer ces noms. Les doublons — `name` et
+       * `from_name`, `email` et `reply_to` — couvrent les deux conventions
+       * qu'EmailJS propose selon la façon dont le gabarit a été créé : les
+       * champs inconnus sont ignorés, mais un champ attendu et absent laisse
+       * un trou dans le message reçu.
+       *
+       * `reply_to` a un sens particulier : EmailJS s'en sert pour l'en-tête de
+       * réponse. Sans lui, répondre depuis la boîte de réception écrirait à
+       * EmailJS et non au visiteur.
+       */
+      template_params: {
+        from_name: message.name,
+        name: message.name,
+        reply_to: message.email,
+        email: message.email,
+        trade: message.trade || "non précisé",
+        message: message.message,
+        to_email: site.email,
+      },
     }),
   });
 
   if (!response.ok) {
-    // Le corps de la réponse peut contenir la clé en écho : on ne le
-    // journalise pas, seul le statut sort d'ici.
-    throw new Error(`Resend a répondu ${response.status}`);
+    // Le corps de la réponse peut renvoyer les identifiants en écho : seul le
+    // statut sort d'ici, jamais le texte.
+    throw new Error(`EmailJS a répondu ${response.status}`);
   }
 }

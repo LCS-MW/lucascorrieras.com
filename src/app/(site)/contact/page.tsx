@@ -4,6 +4,7 @@ import { PageEntrance } from "@/components/motion/PageEntrance";
 import { Section } from "@/components/ui/Section";
 import { contact } from "@/content/contact";
 import { pages } from "@/content/pages";
+import { canSend } from "@/lib/mail";
 import { pageMetadata } from "@/lib/metadata";
 
 import type { Metadata } from "next";
@@ -11,14 +12,15 @@ import type { Metadata } from "next";
 export const metadata: Metadata = pageMetadata(pages.contact, "/contact");
 
 /**
- * Le formulaire n'apparaît que si l'envoi est possible.
+ * Le formulaire n'apparaît que si l'envoi est réellement possible.
  *
- * `RESEND_API_KEY` est lue au moment de la compilation : sa seule présence est
- * évaluée, jamais sa valeur, et rien n'en sort dans le HTML. Sans clé, la page
- * garde le courriel et le téléphone — un formulaire qui n'envoie rien coûte
- * plus cher qu'une adresse qui marche.
+ * `canSend()` vérifie la présence des quatre variables EmailJS au moment de la
+ * compilation : leur présence seule est évaluée, jamais leur valeur, et rien
+ * n'en sort dans le HTML. S'il en manque une, la page garde le courriel et le
+ * téléphone — un formulaire qui n'envoie rien coûte plus cher qu'une adresse
+ * qui marche.
  */
-const ENVOI_POSSIBLE = Boolean(process.env.RESEND_API_KEY);
+const ENVOI_POSSIBLE = canSend();
 
 export default function ContactPage() {
   return (

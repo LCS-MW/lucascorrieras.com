@@ -42,8 +42,9 @@ export const contact = {
   },
 
   /**
-   * Formulaire. Il ne s'affiche que si `RESEND_API_KEY` est renseignée : sans
-   * quoi la page retombe sur le courriel et le téléphone, qui, eux, marchent.
+   * Formulaire. Il ne s'affiche que si les quatre variables EmailJS sont
+   * renseignées — voir `canSend()` — sans quoi la page retombe sur le courriel
+   * et le téléphone, qui, eux, marchent.
    */
   form: {
     title: "Écrire directement",

@@ -124,7 +124,7 @@ export const legalPages = {
         title: "Quand vous m’écrivez",
         body: [
           "Vous pouvez m’écrire par courriel depuis votre propre messagerie, ou passer par le formulaire de la page contact. Dans les deux cas je reçois votre adresse et ce que vous avez choisi de me dire.",
-          "Le formulaire n’enregistre rien sur le site : il transmet votre message à ma boîte mail par l’intermédiaire de Resend, un service d’acheminement de courriel. Le message y transite, il n’y est pas conservé pour être exploité.",
+          "Le formulaire n’enregistre rien sur le site : il transmet votre message à ma boîte mail par l’intermédiaire d’EmailJS, un service d’acheminement de courriel. Le message y transite, il n’y est pas conservé pour être exploité.",
           "Je garde ces échanges le temps de la relation, et les documents comptables le temps que la loi impose. Rien n’est revendu, rien n’est transmis à un tiers à des fins commerciales.",
         ],
       },
