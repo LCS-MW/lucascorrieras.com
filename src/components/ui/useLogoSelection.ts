@@ -1,10 +1,11 @@
 "use client";
 
+import { useEffect } from "react";
+
 import {
   prefersReducedMotion,
   useReducedMotion,
 } from "@/hooks/useReducedMotion";
-import { DURATION, EASE, gsap, useGSAP } from "@/lib/gsap";
 
 import type { RefObject } from "react";
 
@@ -49,67 +50,93 @@ const RELEASE_SPEED = 1.35;
  * du filet à l'accent est laissé au CSS, qui sait le faire sans JavaScript et
  * sous `prefers-reduced-motion`.
  *
- * L'import statique de GSAP est sans effet sur le poids des pages : l'en-tête
- * est monté à l'intérieur de `<Scene>`, dans le layout `(site)`, qui tire déjà
- * le moteur sur toutes les pages. Mesuré : le JavaScript initial de `/cgv` est
- * identique avec et sans ce fichier.
+ * ⚠️ Pas de `useGSAP()` ici, et ce n'est pas un oubli. Le hook vient de
+ * `@gsap/react`, qui importe GSAP : l'importer statiquement met `lib/gsap`
+ * dans le chunk de l'en-tête, donc évalué avant l'hydratation. Or ce module
+ * pose `data-gsap` sur `<html>` dès son évaluation, et React trouve alors sur
+ * la racine un attribut que le rendu serveur n'avait pas :
+ *
+ *   « A tree hydrated but some attributes of the server rendered HTML didn't
+ *     match the client properties. »
+ *
+ * Reproduit puis levé en `next dev` sur l'accueil. Déplacer l'attribut dans un
+ * effet n'est pas une option : il conditionne en CSS les états masqués de
+ * départ, et il doit être posé avant la première peinture sous peine de faire
+ * clignoter les blocs animés.
+ *
+ * On ouvre donc le contexte à la main après un `import()`, ce que `useGSAP`
+ * fait de toute façon en interne : même portée, même nettoyage. Le module est
+ * déjà en cache à ce moment-là, `LenisProvider` le demande dès l'hydratation.
  */
 export function useLogoSelection(root: RefObject<HTMLElement | null>): void {
   const reduced = useReducedMotion();
 
-  useGSAP(
-    () => {
-      // Relecture synchrone : au premier rendu client, `useReducedMotion` rend
-      // encore la valeur du serveur. Sans elle on construirait une timeline
-      // pour la jeter à la passe suivante.
-      if (reduced || prefersReducedMotion()) return;
+  useEffect(() => {
+    const element = root.current;
+    if (!element) return;
 
-      const element = root.current;
-      if (!element) return;
+    // Relecture synchrone : au premier rendu client, `useReducedMotion` rend
+    // encore la valeur du serveur. Sans elle on construirait une timeline pour
+    // la jeter à la passe suivante.
+    if (reduced || prefersReducedMotion()) return;
 
-      const timeline = gsap.timeline({ paused: true });
+    let dispose: (() => void) | undefined;
+    let cancelled = false;
 
-      CORNERS.forEach((corner, index) => {
-        const at = index * STAGGER;
+    void import("@/lib/gsap").then(({ gsap, DURATION, EASE }) => {
+      if (cancelled) return;
 
-        timeline.to(
-          `[data-logo-corner="${corner}"]`,
-          { ...AWAY[corner], duration: DURATION.ui, ease: EASE.ui },
-          at,
-        );
+      const context = gsap.context(() => {
+        const timeline = gsap.timeline({ paused: true });
 
-        // La poignée est centrée sur l'angle : son échelle part donc du point
-        // exact du crochet, sans avoir à fixer d'origine.
-        timeline.fromTo(
-          `[data-logo-corner="${corner}"] [data-logo-handle]`,
-          { scale: 0, opacity: 0 },
-          { scale: 1, opacity: 1, duration: HANDLE_DURATION, ease: EASE.ui },
-          at + HANDLE_OFFSET,
-        );
-      });
+        CORNERS.forEach((corner, index) => {
+          const at = index * STAGGER;
 
-      const grab = () => timeline.timeScale(1).play();
-      const release = () => timeline.timeScale(RELEASE_SPEED).reverse();
+          timeline.to(
+            `[data-logo-corner="${corner}"]`,
+            { ...AWAY[corner], duration: DURATION.ui, ease: EASE.ui },
+            at,
+          );
 
-      // Au doigt il n'y a pas de survol : `pointerenter` part au toucher et
-      // rien ne le rappelle ensuite — la sélection resterait ouverte.
-      const onPointerEnter = (event: PointerEvent) => {
-        if (event.pointerType === "touch") return;
-        grab();
-      };
+          // La poignée est centrée sur l'angle : son échelle part donc du
+          // point exact du crochet, sans avoir à fixer d'origine.
+          timeline.fromTo(
+            `[data-logo-corner="${corner}"] [data-logo-handle]`,
+            { scale: 0, opacity: 0 },
+            { scale: 1, opacity: 1, duration: HANDLE_DURATION, ease: EASE.ui },
+            at + HANDLE_OFFSET,
+          );
+        });
 
-      element.addEventListener("pointerenter", onPointerEnter);
-      element.addEventListener("pointerleave", release);
-      element.addEventListener("focus", grab);
-      element.addEventListener("blur", release);
+        const grab = () => timeline.timeScale(1).play();
+        const release = () => timeline.timeScale(RELEASE_SPEED).reverse();
 
-      return () => {
-        element.removeEventListener("pointerenter", onPointerEnter);
-        element.removeEventListener("pointerleave", release);
-        element.removeEventListener("focus", grab);
-        element.removeEventListener("blur", release);
-      };
-    },
-    { scope: root, dependencies: [reduced] },
-  );
+        // Au doigt il n'y a pas de survol : `pointerenter` part au toucher et
+        // rien ne le rappelle ensuite — la sélection resterait ouverte.
+        const onPointerEnter = (event: PointerEvent) => {
+          if (event.pointerType === "touch") return;
+          grab();
+        };
+
+        element.addEventListener("pointerenter", onPointerEnter);
+        element.addEventListener("pointerleave", release);
+        element.addEventListener("focus", grab);
+        element.addEventListener("blur", release);
+
+        return () => {
+          element.removeEventListener("pointerenter", onPointerEnter);
+          element.removeEventListener("pointerleave", release);
+          element.removeEventListener("focus", grab);
+          element.removeEventListener("blur", release);
+        };
+      }, element);
+
+      dispose = () => context.revert();
+    });
+
+    return () => {
+      cancelled = true;
+      dispose?.();
+    };
+  }, [root, reduced]);
 }
