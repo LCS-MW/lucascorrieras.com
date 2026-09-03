@@ -1,7 +1,5 @@
-import { TransitionLink } from "@/components/motion/TransitionLink";
-
 import { SiteNav } from "@/components/sections/SiteNav";
-import { nav } from "@/content/nav";
+import { SiteLogo } from "@/components/ui/SiteLogo";
 
 /**
  * En-tête du site, monté dans le layout racine : il reste identique d'une page
@@ -19,12 +17,7 @@ export function SiteHeader() {
     <>
       <header data-header>
         <div className="mx-auto flex h-full max-w-5xl items-center justify-between gap-8 px-6 md:px-12">
-          <TransitionLink
-            href="/"
-            className="font-mono text-label text-ink hover:text-accent inline-block py-2 whitespace-nowrap uppercase transition-colors"
-          >
-            <span className="link-underline">{nav.brand}</span>
-          </TransitionLink>
+          <SiteLogo />
 
           <SiteNav />
         </div>

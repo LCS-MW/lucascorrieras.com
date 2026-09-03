@@ -205,6 +205,78 @@ a:focus-visible .link-underline::after {
   scale: 1 1;
 }
 
+/* ---- Logotype ----------------------------------------------------------
+
+   La marque est un cadre de sélection posé autour du nom. Deux signaux au
+   survol, et un seul geste : les crochets passent au filet d'accent, et
+   chaque angle se remplit d'une poignée.
+
+   Le partage des rôles est volontaire. La couleur est ici, en CSS : elle doit
+   répondre même sans JavaScript, et même quand le visiteur a demandé à
+   réduire les animations. La géométrie est dans `useLogoSelection` : elle
+   demande un balayage horaire, ce qu'une transition CSS ne sait pas faire
+   proprement sur quatre éléments.
+   ------------------------------------------------------------------------ */
+
+.site-logo {
+  display: block;
+  height: 1.375rem;
+  width: auto;
+
+  /* Un `<svg>` rogne son viewBox par défaut, et le geste de survol en sort des
+     deux côtés : les poignées sont centrées sur les angles, donc à cheval sur
+     le bord, et les crochets s'écartent encore de neuf unités vers
+     l'extérieur. Sans cette ligne, ils disparaissent purement et simplement au
+     survol au lieu de s'écarter. Constaté à la capture.
+
+     Élargir le viewBox serait l'autre solution, mais elle gonflerait la boîte
+     de mise en page du logo bien au-delà du dessin, et l'alignement avec la
+     navigation deviendrait faux. */
+  overflow: visible;
+}
+
+.site-logo-link {
+  display: inline-block;
+  padding-block: 0.5rem;
+}
+
+.site-logo text {
+  font-family: var(--font-mono);
+  font-weight: var(--font-weight-normal);
+  fill: var(--color-ink);
+}
+
+.site-logo [data-logo-corner] path {
+  stroke: var(--color-ink);
+  transition: stroke 220ms var(--ease-reveal);
+}
+
+.site-logo-link:hover [data-logo-corner] path,
+.site-logo-link:focus-visible [data-logo-corner] path {
+  stroke: var(--color-accent);
+}
+
+/* État de repos des poignées. C'est le seul endroit qui les cache : si le
+   chunk GSAP n'arrive jamais, le logo reste un logo. */
+.site-logo [data-logo-handle] {
+  fill: var(--color-accent);
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* L'état final, tout de suite — pas la même animation en plus lent. Le
+     crochet ne construit rien dans ce cas, les poignées lui sont donc
+     laissées entièrement. */
+  .site-logo [data-logo-corner] path {
+    transition: none;
+  }
+
+  .site-logo-link:hover [data-logo-handle],
+  .site-logo-link:focus-visible [data-logo-handle] {
+    opacity: 1;
+  }
+}
+
 /* ---- Navigation principale -------------------------------------------- */
 
 /* Le soulignement n'est rendu que dans le lien actif, et c'est tout : sa
