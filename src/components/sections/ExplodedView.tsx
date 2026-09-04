@@ -136,7 +136,7 @@ export function ExplodedView() {
         </p>
 
         <div data-eclat className="mt-16">
-          <div data-eclat-pin>
+          <div data-eclat-piste>
             <div data-eclat-stage aria-hidden="true">
               {/* Les lignes de rappel, sous la machine. */}
               {PLACEES.map((piece) => {

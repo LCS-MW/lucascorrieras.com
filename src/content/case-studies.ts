@@ -94,7 +94,7 @@ export const carteRestaurant = {
      * les porte toutes, à toutes les largeurs.
      */
     description:
-      "Schéma d’un ordinateur portable affichant la carte du restaurant. Sur grand écran, quatre pièces s’en détachent au défilement ; elles sont détaillées une à une dans la section suivante.",
+      "Schéma d’un ordinateur portable affichant la carte du restaurant, accompagné des quatre pièces qui le composent : le premier écran, la carte des plats, l’API qui sert les données et l’interface de gestion. Sur grand écran, elles se détachent au défilement. Chacune est détaillée dans la section suivante.",
 
     screen: {
       alt: "Page d’accueil du site : le titre « Le Restaurant » sur fond crème, avec un motif de feuillage au trait et une barre de navigation entrées, plats, desserts.",

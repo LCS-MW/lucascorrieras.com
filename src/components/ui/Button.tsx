@@ -1,5 +1,7 @@
 import { TransitionLink } from "@/components/motion/TransitionLink";
 
+import { a11y } from "@/content/site";
+
 import type { ReactNode } from "react";
 
 type ButtonProps = {
@@ -26,10 +28,19 @@ export function Button({ href, children, variant = "primary" }: ButtonProps) {
   const isInternal = href.startsWith("/");
   const className = `inline-flex items-center rounded-sm border px-6 py-3 text-base font-medium transition-colors duration-150 ${VARIANT[variant]}`;
 
+  // Un lien qui sort du site s'ouvre à côté : le visiteur garde la page
+  // ouverte et revient sans la recharger. `rel` va avec `target="_blank"`,
+  // sinon la page ouverte peut manipuler celle qui l'a ouverte.
   if (!isInternal) {
     return (
-      <a href={href} className={className}>
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={className}
+      >
         {children}
+        <span className="sr-only"> ({a11y.newTab})</span>
       </a>
     );
   }

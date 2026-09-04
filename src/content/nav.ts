@@ -9,9 +9,22 @@ import type { Action } from "@/content/types";
  */
 const work: Action = { href: "/realisations", label: "Réalisations" };
 
+/**
+ * L'étude de cas est la seule preuve du site tant que « Réalisations » est
+ * éteint. Elle était atteignable par un lien en bas de la section
+ * démonstrations, donc à deux écrans de défilement de l'accueil : personne ne
+ * la trouvait. Elle est dans le menu, juste après l'offre — on dit ce qu'on
+ * fait, puis on le montre.
+ */
+const caseStudy: Action = {
+  href: "/demonstrations/carte-restaurant",
+  label: "Étude de cas",
+};
+
 const mainLinks: Action[] = [
   { href: "/services", label: "Services" },
   ...(features.realisations ? [work] : []),
+  caseStudy,
   { href: "/approche", label: "Approche" },
   { href: "/contact", label: "Contact" },
 ];
@@ -37,6 +50,7 @@ export const footer = {
       links: [
         { href: "/services", label: "Services" },
         ...(features.realisations ? [work] : []),
+        caseStudy,
         { href: "/approche", label: "Approche" },
       ] satisfies Action[],
     },

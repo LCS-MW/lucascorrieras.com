@@ -8,6 +8,15 @@
  * de la page contact, sa ligne dans la fiche, le `telephone` des données
  * structurées — disparaît alors sans laisser de trace visible.
  */
+/**
+ * Mention lue par les lecteurs d'écran sur les liens qui ouvrent un onglet.
+ * Un lien qui change de fenêtre sans le dire fait perdre le fil : le retour
+ * arrière ne ramène plus là où on était.
+ */
+export const a11y = {
+  newTab: "ouvre un nouvel onglet",
+} as const;
+
 export const site = {
   name: "Lucas Corrieras",
 

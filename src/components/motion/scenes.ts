@@ -406,6 +406,17 @@ export const SCENES = {
    * machine. Même contrat que `showcase` — un seul scalaire écrit par image,
    * tout le reste calculé en CSS, donc rien qui touche à la mise en page.
    *
+   * ⚠️ La section n'est **pas** épinglée, et c'est un choix, pas un oubli.
+   * L'accueil épingle déjà sa section maquette. Deux épinglages sur le même
+   * site, c'est le même tour joué deux fois : le vocabulaire devient une
+   * décoration répétée, ce que le CLAUDE.md interdit. Ici le scrub est branché
+   * sur la traversée naturelle de la section, sans retenir le défilement.
+   *
+   * L'éclatement est donc terminé quand la section arrive au centre de
+   * l'écran, et il y reste : après `end`, la progression vaut 1 et ne bouge
+   * plus. On lit la suite avec les pièces séparées sous les yeux, au lieu de
+   * les voir se refermer.
+   *
    * Le seuil passe par `gsap.matchMedia()` et non par un `window.matchMedia`
    * lu une fois. La lecture unique cassait dans les deux sens, mesuré :
    * chargé large puis rétréci, la cale de l'épinglage restait insérée et le
@@ -414,25 +425,22 @@ export const SCENES = {
    * éclatée restait morte, pièces figées derrière la machine.
    *
    * Sous 48 rem, rien n'est branché : le CSS y réduit la scène au portable
-   * seul, et épingler une page longue sous le pouce enferme le visiteur sans
-   * rien lui apprendre.
+   * seul.
    */
   eclat(api: SceneApi) {
     revealHeading(api, enter(api));
 
     const stage = api.q("[data-eclat]");
-    const pin = api.q("[data-eclat-pin]");
-    if (!stage || !pin) return;
+    const piste = api.q("[data-eclat-piste]");
+    if (!stage || !piste) return;
 
     const mm = api.gsap.matchMedia();
 
     mm.add("(width >= 48rem)", () => {
       const trigger = api.ScrollTrigger.create({
-        trigger: pin,
-        start: "center center",
-        end: "+=130%",
-        pin: true,
-        pinSpacing: true,
+        trigger: piste,
+        start: "top 85%",
+        end: "center 45%",
         scrub: 0.5,
         invalidateOnRefresh: true,
         onUpdate: (self) => {
