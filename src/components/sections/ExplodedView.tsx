@@ -9,6 +9,32 @@ const HEADING_ID = "eclate-titre";
 const { explode, layers, api, gestion, base, hebergement, navigation } =
   carteRestaurant;
 
+/**
+ * Où chaque calque part, en centièmes de la largeur de la scène, mesuré
+ * depuis son centre.
+ *
+ * Dispersés, pas alignés. Une première version les faisait descendre en
+ * escalier régulier, ce qui se lisait comme une liste posée en biais plutôt
+ * que comme une pile ouverte. La profondeur, elle, reste monotone : c'est
+ * elle qui porte l'ordre, du plus visible au plus enfoui.
+ *
+ * Bornes à ne pas dépasser, pour que rien ne sorte du cadre au repos : un
+ * calque fait 32 de large et 20 de haut dans une scène de 100 × 62,5, donc
+ * |dx| ≤ 34 et |dy| ≤ 21.
+ */
+const POSITIONS: Record<string, { dx: number; dy: number }> = {
+  ecran: { dx: -29, dy: -14 },
+  navigation: { dx: 3, dy: -18 },
+  carte: { dx: 31, dy: -7 },
+  api: { dx: -33, dy: 4 },
+  base: { dx: 15, dy: 14 },
+  gestion: { dx: -13, dy: 18 },
+  hebergement: { dx: 32, dy: 16 },
+};
+
+/** Les calques réellement plaçables : sans position, pas de place dans la pile. */
+const PLACES = layers.filter((layer) => layer.id in POSITIONS);
+
 /** Barre de maquette, dans la voix des schémas du site. */
 function Bar({ className }: { className: string }) {
   return <span className={`bg-ink-2/30 block ${className}`} />;
@@ -32,7 +58,7 @@ function LayerVisual({ visual }: { visual: string }) {
           alt={explode.alts.accueil}
           width={1280}
           height={800}
-          sizes="(min-width: 64rem) 350px, 34vw"
+          sizes="(min-width: 64rem) 700px, 46vw"
           className="block h-full w-full object-cover object-top"
         />
       );
@@ -44,7 +70,7 @@ function LayerVisual({ visual }: { visual: string }) {
           alt={explode.alts.carte}
           width={960}
           height={600}
-          sizes="(min-width: 64rem) 350px, 34vw"
+          sizes="(min-width: 64rem) 700px, 46vw"
           className="block h-full w-full object-cover object-top"
         />
       );
@@ -94,7 +120,7 @@ function LayerVisual({ visual }: { visual: string }) {
             {base.columns.map((column) => (
               <span
                 key={column}
-                className="font-mono text-label text-accent truncate uppercase"
+                className="font-mono text-label text-accent uppercase"
               >
                 {column}
               </span>
@@ -137,10 +163,10 @@ function LayerVisual({ visual }: { visual: string }) {
         <div className="grid h-full grid-cols-2 content-center gap-2 p-5">
           {hebergement.services.map((service) => (
             <div key={service.name} className="border-rule border p-2">
-              <p className="font-mono text-label text-accent truncate uppercase">
+              <p className="font-mono text-label text-accent uppercase">
                 {service.name}
               </p>
-              <p className="font-mono text-label text-ink-2 mt-1 truncate uppercase">
+              <p className="font-mono text-label text-ink-2 mt-1 uppercase">
                 {service.role}
               </p>
             </div>
@@ -187,11 +213,17 @@ export function ExplodedView() {
                 l'ordre même quand une seule est visible à l'écran. */}
             <div data-eclat-scene aria-hidden="true">
               <div data-eclat-pile>
-                {layers.map((layer, index) => (
+                {PLACES.map((layer, index) => (
                   <div
                     key={layer.id}
                     data-eclat-calque
-                    style={{ "--i": index } as React.CSSProperties}
+                    style={
+                      {
+                        "--i": index,
+                        "--dx": POSITIONS[layer.id].dx,
+                        "--dy": POSITIONS[layer.id].dy,
+                      } as React.CSSProperties
+                    }
                   >
                     <span
                       data-eclat-etiquette
@@ -200,11 +232,23 @@ export function ExplodedView() {
                       <span className="text-accent">{layer.label}</span>
                       <span className="text-ink-2">{layer.cote}</span>
                     </span>
-                    <span
-                      data-eclat-carte
-                      className="border-rule bg-paper block aspect-[16/10] overflow-hidden border"
-                    >
-                      <LayerVisual visual={layer.visual} />
+
+                    <span data-eclat-cadre>
+                      {/* Le cadre de sélection se referme sur le calque visé.
+                          C'est le geste du logotype et de la séquence
+                          d'entrée, repris ici : quatre poignées d'angle qui se
+                          posent. */}
+                      <i data-eclat-poignee />
+                      <i data-eclat-poignee />
+                      <i data-eclat-poignee />
+                      <i data-eclat-poignee />
+
+                      <span
+                        data-eclat-carte
+                        className="border-rule bg-paper block aspect-[16/10] overflow-hidden border"
+                      >
+                        <LayerVisual visual={layer.visual} />
+                      </span>
                     </span>
                   </div>
                 ))}

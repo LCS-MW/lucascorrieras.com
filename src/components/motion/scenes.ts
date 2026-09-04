@@ -384,8 +384,29 @@ export const SCENES = {
     const mm = api.gsap.matchMedia();
 
     mm.add("(width >= 48rem)", () => {
-      const dernier = api.qa("[data-eclat-calque]").length - 1;
+      const calques = api.qa("[data-eclat-calque]");
+      const dernier = calques.length - 1;
       if (dernier < 1) return;
+
+      /**
+       * Position apparente de chaque calque, relue depuis le DOM plutôt que
+       * recopiée ici : le composant en est la seule source, et une seconde
+       * table finirait par diverger de la première.
+       *
+       * Aucune correction de perspective ici, et c'est volontaire. Le
+       * déplacement de la caméra s'applique à la pile, donc dans le même
+       * espace que le calque : les deux subissent exactement la même
+       * projection, qui s'annule. J'avais d'abord divisé par le facteur de
+       * fuite, ce qui introduisait une erreur croissante avec la profondeur —
+       * mesuré, 110 px de dérive sur le septième calque.
+       */
+      const places = calques.map((calque) => {
+        const style = getComputedStyle(calque);
+        return {
+          x: Number.parseFloat(style.getPropertyValue("--dx")) || 0,
+          y: Number.parseFloat(style.getPropertyValue("--dy")) || 0,
+        };
+      });
 
       // Découpage de la course, en fractions de la progression totale.
       // 18 % pour ouvrir la pile, 7 % pour que la caméra prenne la main, le
@@ -433,10 +454,19 @@ export const SCENES = {
             "--eclat-zoom",
             Math.max(0, Math.min(1, (t - OUVERTURE) / PRISE)),
           );
-          ecrire(
-            "--eclat-camera",
-            viser(Math.max(0, Math.min(1, (t - DEPART) / (1 - DEPART)))),
+          const camera = viser(
+            Math.max(0, Math.min(1, (t - DEPART) / (1 - DEPART))),
           );
+          ecrire("--eclat-camera", camera);
+
+          // Les calques ne sont plus alignés : la position visée s'interpole
+          // entre les deux qui encadrent la caméra, ce qu'une formule CSS ne
+          // sait pas faire sur des valeurs quelconques.
+          const bas = Math.min(dernier, Math.floor(camera));
+          const haut = Math.min(dernier, bas + 1);
+          const part = camera - bas;
+          ecrire("--cam-x", places[bas].x + (places[haut].x - places[bas].x) * part);
+          ecrire("--cam-y", places[bas].y + (places[haut].y - places[bas].y) * part);
         },
       });
 
@@ -450,6 +480,8 @@ export const SCENES = {
           "--eclat-progress",
           "--eclat-zoom",
           "--eclat-camera",
+          "--cam-x",
+          "--cam-y",
         ]) {
           stage.style.removeProperty(nom);
         }

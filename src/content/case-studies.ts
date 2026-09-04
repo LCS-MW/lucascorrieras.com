@@ -228,11 +228,17 @@ export const carteRestaurant = {
   /** Les quatre services de `docker-compose.yml`, dans l'ordre du fichier. */
   hebergement: {
     caption: "Quatre conteneurs",
+    /**
+     * Noms exacts des services de `docker-compose.yml`, et un rôle en un mot.
+     * Les rôles sont courts à dessein : la vignette met son contenu en page à
+     * sa taille réduite avant d'être agrandie par la caméra, donc une étiquette
+     * qui ne tient pas là se retrouve tronquée même en gros plan.
+     */
     services: [
-      { name: "database", role: "PostgreSQL" },
-      { name: "backend", role: "Symfony" },
-      { name: "nginx", role: "Routeur d’adresses" },
-      { name: "frontend", role: "Next.js" },
+      { name: "database", role: "Base" },
+      { name: "backend", role: "Serveur" },
+      { name: "nginx", role: "Routeur" },
+      { name: "frontend", role: "Site" },
     ],
   },
 
