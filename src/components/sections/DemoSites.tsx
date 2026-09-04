@@ -81,6 +81,15 @@ export function DemoSites({
             </article>
           ))}
         </div>
+
+        <p className="mt-14">
+          <TransitionLink
+            href={demoSites.caseStudy.href}
+            className="text-ink hover:text-accent text-base transition-colors"
+          >
+            <span className="link-underline">{demoSites.caseStudy.label}</span>
+          </TransitionLink>
+        </p>
       </Section>
     </Scene>
   );

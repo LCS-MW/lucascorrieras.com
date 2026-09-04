@@ -1,4 +1,4 @@
-import type { SectionIntro } from "@/content/types";
+import type { Action, SectionIntro } from "@/content/types";
 
 /**
  * Les trois sites de démonstration.
@@ -25,6 +25,17 @@ export const demoSites = {
     "Ces trois sites sont des exercices. Aucun n’a été commandé et aucune entreprise ne se cache derrière. Les noms, les prix et les chiffres sont inventés.",
 
   action: "Ouvrir le site",
+
+  /**
+   * Renvoi vers l'étude de cas, qui n'est pas de la même nature que ces trois
+   * démonstrations : là-bas l'entreprise était réelle et le site est parti en
+   * ligne. Le lien est posé après les trois, pas avant, parce qu'il répond à
+   * la question suivante — « d'accord, mais qu'est-ce qu'il y a dessous ? ».
+   */
+  caseStudy: {
+    href: "/demonstrations/carte-restaurant",
+    label: "Voir une construction complète, démontée pièce par pièce",
+  } satisfies Action,
 
   items: [
     {

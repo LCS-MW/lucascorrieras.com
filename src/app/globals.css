@@ -640,6 +640,187 @@ a:focus-visible .link-underline::after {
 }
 
 /* ==========================================================================
+   Vue éclatée
+   ==========================================================================
+
+   Même contrat que la section maquette juste au-dessus : un seul scalaire,
+   `--eclat-progress`, écrit par le scrub. 0 = machine assemblée, 1 = pièces
+   séparées. Toute la géométrie se calcule ici, aucune propriété n'est animée
+   en JavaScript.
+
+   Deux régimes. Sous 48 rem il n'y a pas de scène : le portable seul, en bloc
+   ordinaire, et les pièces disparaissent — elles sont reprises juste en
+   dessous, en taille de lecture. Au-dessus, la scène s'ouvre et l'éclatement
+   se joue au défilement.
+
+   Les distances sont des entiers sans unité, portés par chaque pièce, et
+   multipliés par `1cqw`, un centième de la largeur de la scène. Elles suivent
+   donc la scène et non le viewport : réglées sur le viewport, elles sortaient
+   du cadre par la gauche dès que la fenêtre passait sous 1024 px, la scène
+   rétrécissant alors que les écarts, eux, ne bougeaient plus.
+   -------------------------------------------------------------------------- */
+
+[data-eclat] {
+  --eclat-progress: 0;
+}
+
+/* ---- Le portable, à toutes les largeurs --------------------------------- */
+
+[data-eclat-machine] {
+  margin-inline: auto;
+  max-width: 30rem;
+  background-color: var(--color-paper);
+}
+
+[data-eclat-screen] {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  /* Le trait passe du texte au filet : une coque vidée n'a pas à être
+     dessinée aussi fort qu'un écran allumé. */
+  border: 1px solid
+    color-mix(
+      in oklab,
+      var(--color-rule) calc(var(--eclat-progress) * 100%),
+      var(--color-ink)
+    );
+}
+
+/* Base du portable : un trapèze au trait, pas un rendu. */
+[data-eclat-base] {
+  height: 1.2rem;
+  margin-inline: -1.25rem;
+  border-right: 1px solid var(--color-rule);
+  border-bottom: 1px solid var(--color-rule);
+  border-left: 1px solid var(--color-rule);
+  background-color: var(--color-surface);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 1.25rem) 100%, 1.25rem 100%);
+}
+
+/* Les pièces et leurs lignes de rappel n'existent que dans la scène. */
+[data-eclat-leader],
+[data-eclat-piece] {
+  display: none;
+}
+
+/* ---- La scène, au-dessus de 48 rem -------------------------------------- */
+
+@media (width >= 48rem) {
+  [data-eclat-stage] {
+    /* Ouvre les unités de conteneur pour tout ce qui suit. `inline-size` et
+       non `size` : la hauteur vient du ratio, la contenir n'apporte rien. */
+    container-type: inline-size;
+
+    /* Facteur commun. `--dx: 32` vaut donc 28 % de la largeur de la scène,
+       quelle que soit cette largeur. */
+    --scale: 0.88;
+
+    position: relative;
+    display: block;
+    margin-inline: auto;
+    aspect-ratio: 16 / 10;
+    width: 100%;
+    max-width: 64rem;
+  }
+
+  /* La machine passe **devant** les pièces, et son fond est opaque.
+     C'est ce qui fait que les pièces en sortent au lieu de la recouvrir :
+     mesuré, elles ne dégagent complètement son gabarit qu'à 92 % de la
+     course, et derrière elle sur tout le reste du trajet. Rangée dessous,
+     elle disparaissait sous un bloc de quatre cartes pendant les deux tiers
+     du défilement.
+
+     Le niveau 3 la place aussi au-dessus des lignes de rappel, qui partent du
+     centre exact et la traverseraient. */
+  [data-eclat-machine] {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 3;
+    width: 40%;
+    max-width: none;
+    translate: -50% -50%;
+    /* Elle recule pendant que les pièces avancent. Sans ça, l'écran vidé
+       reste le plus gros objet de la scène et attire l'œil alors qu'il ne
+       contient plus rien. */
+    scale: calc(1 - var(--eclat-progress) * 0.28);
+  }
+
+  [data-eclat-base] {
+    height: 1.9cqw;
+    margin-inline: -2cqw;
+    clip-path: polygon(0 0, 100% 0, calc(100% - 2cqw) 100%, 2cqw 100%);
+  }
+
+  /* ---- Les lignes de rappel --------------------------------------------- */
+
+  /* Une ligne par pièce. Elle ne part pas du centre mais du bord de la
+     machine — `--start` — et s'allonge jusqu'à la pièce au fil du scrub.
+     `transform` et non les propriétés séparées : il faut tourner d'abord,
+     puis avancer le long de l'axe tourné, et l'ordre des propriétés
+     individuelles est fixé à translate, rotate, scale. */
+  [data-eclat-leader] {
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 0;
+    height: 1px;
+    width: calc(
+      (var(--len) - var(--start)) * var(--scale) * var(--eclat-progress) * 1cqw
+    );
+    transform: rotate(var(--angle))
+      translateX(calc(var(--start) * var(--scale) * 1cqw));
+    transform-origin: 0 50%;
+    background-color: var(--color-rule);
+  }
+
+  /* ---- Les pièces -------------------------------------------------------- */
+
+  [data-eclat-piece] {
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 2;
+    width: 22%;
+    translate:
+      calc(-50% + var(--dx) * var(--scale) * var(--eclat-progress) * 1cqw)
+      calc(-50% + var(--dy) * var(--scale) * var(--eclat-progress) * 1cqw);
+    /* Quatre nœuds, pas un de plus : au-delà on sature la mémoire du GPU. */
+    will-change: transform;
+  }
+
+  /* La capture tient toute la première moitié, puis s'efface d'un coup.
+     L'écran doit encore être allumé pendant que les pièces sortent de derrière
+     lui, sinon la machine n'est plus qu'un rectangle blanc posé au milieu
+     pendant les deux tiers du défilement. Il finit vide, ce qui est le propos :
+     ses parties en sont sorties.
+
+     La règle vit ici, dans la requête média, et pas au-dessus. Sous 48 rem il
+     n'y a pas de scrub, mais `prefers-reduced-motion` pose quand même la
+     progression à 1 : au dehors, elle éteignait l'écran du portable sur tout
+     mobile réglé en mouvement réduit, et il ne restait qu'un cadre vide. */
+  [data-eclat-screen] img {
+    opacity: clamp(0, (1 - var(--eclat-progress)) * 2.2, 1);
+  }
+
+  /* Aucune opacité sur les pièces au repos, et c'est délibéré : `scenes.ts`
+     interdit qu'un état masqué de départ soit posé en CSS, parce qu'un chunk
+     GSAP qui n'arrive pas laisserait alors du contenu invisible pour toujours.
+     Ce qui les cache à progression 0, c'est la machine elle-même — fond
+     opaque, niveau 3, et un gabarit plus grand qu'elles dans les deux
+     dimensions. */
+}
+
+/* Mouvement réduit : l'état éclaté d'emblée, pas la même chose en plus lent. */
+@media (prefers-reduced-motion: reduce) {
+  [data-eclat] {
+    --eclat-progress: 1;
+  }
+}
+
+/* ==========================================================================
    Entrées de section
    ========================================================================== */
 

@@ -12,6 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...(features.realisations
       ? [{ path: "/realisations", priority: 0.8 }]
       : []),
+    { path: "/demonstrations/carte-restaurant", priority: 0.8 },
     { path: "/approche", priority: 0.7 },
     { path: "/contact", priority: 0.9 },
     // Les pages légales sont indexables mais sans intérêt de classement :

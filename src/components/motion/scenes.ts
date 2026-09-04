@@ -356,6 +356,104 @@ export const SCENES = {
   },
 
   /**
+   * Étude de cas : chaque pièce est découverte, pas révélée.
+   *
+   * Le filet se trace, la pièce se dégage de sous son masque, le texte suit.
+   * C'est le geste de la grille de réalisations (`projects`), repris tel quel
+   * parce qu'il dit la même chose : on découvre un écran.
+   *
+   * Surtout, ce n'est pas un fondu montant posé sur chaque bloc. Une première
+   * version faisait exactement ça, `opacity` et `y` sur le corps entier de
+   * chaque rangée, ce que le CLAUDE.md interdit nommément.
+   */
+  caseStudy(api: SceneApi) {
+    revealHeading(api, enter(api));
+
+    for (const row of api.qa('[data-reveal="row"]')) {
+      const tl = api.gsap.timeline({
+        defaults: { ease: EASE.reveal },
+        scrollTrigger: { trigger: row, start: "top 85%", once: true },
+      });
+
+      const rule = row.querySelector('[data-reveal="row-rule"]');
+      const visual = row.querySelector('[data-reveal="row-visual"]');
+      const body = row.querySelector('[data-reveal="row-body"]');
+
+      if (rule) {
+        tl.fromTo(
+          rule,
+          { scaleX: 0 },
+          { scaleX: 1, duration: 0.5, ease: EASE.travel },
+          0,
+        );
+      }
+      if (visual) {
+        tl.fromTo(
+          visual,
+          { yPercent: 100, scale: 1.04 },
+          { yPercent: 0, scale: 1, duration: 0.8 },
+          0.12,
+        );
+      }
+      if (body) {
+        tl.fromTo(body, { yPercent: 100 }, { yPercent: 0, duration: 0.7 }, 0.26);
+      }
+    }
+  },
+
+  /**
+   * Vue éclatée : la section est épinglée, le scroll sépare les pièces de la
+   * machine. Même contrat que `showcase` — un seul scalaire écrit par image,
+   * tout le reste calculé en CSS, donc rien qui touche à la mise en page.
+   *
+   * Le seuil passe par `gsap.matchMedia()` et non par un `window.matchMedia`
+   * lu une fois. La lecture unique cassait dans les deux sens, mesuré :
+   * chargé large puis rétréci, la cale de l'épinglage restait insérée et le
+   * document gardait 1 218 px de vide pour une animation qui ne tournait plus ;
+   * chargé étroit puis élargi, aucun déclencheur n'était jamais créé et la vue
+   * éclatée restait morte, pièces figées derrière la machine.
+   *
+   * Sous 48 rem, rien n'est branché : le CSS y réduit la scène au portable
+   * seul, et épingler une page longue sous le pouce enferme le visiteur sans
+   * rien lui apprendre.
+   */
+  eclat(api: SceneApi) {
+    revealHeading(api, enter(api));
+
+    const stage = api.q("[data-eclat]");
+    const pin = api.q("[data-eclat-pin]");
+    if (!stage || !pin) return;
+
+    const mm = api.gsap.matchMedia();
+
+    mm.add("(width >= 48rem)", () => {
+      const trigger = api.ScrollTrigger.create({
+        trigger: pin,
+        start: "center center",
+        end: "+=130%",
+        pin: true,
+        pinSpacing: true,
+        scrub: 0.5,
+        invalidateOnRefresh: true,
+        onUpdate: (self) => {
+          stage.style.setProperty("--eclat-progress", self.progress.toFixed(4));
+        },
+      });
+
+      // La propriété est retirée et pas remise à zéro : la valeur de repos
+      // appartient à la feuille de style, et `prefers-reduced-motion` y pose
+      // 1. Écrire 0 ici figerait la scène assemblée pour qui a demandé à
+      // réduire les animations en cours de visite.
+      return () => {
+        trigger.kill();
+        stage.style.removeProperty("--eclat-progress");
+      };
+    });
+
+    return () => mm.revert();
+  },
+
+  /**
    * Appel à l'action : le fond profond balaie la section de haut en bas, puis
    * le titre se révèle par lignes. Le balayage est un `scaleY` sur un calque,
    * pas une hauteur : aucune incidence sur la mise en page.
