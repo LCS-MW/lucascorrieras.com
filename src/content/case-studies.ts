@@ -14,17 +14,19 @@ import type { PageContent, SectionIntro, TechSpec } from "@/content/types";
  * compris l'adresse en ligne et l'API qui répond.
  */
 
-/** Une pièce qui se détache de l'écran pendant l'éclatement. */
-export type Piece = {
-  /** Identifie la pièce en CSS et relie son étiquette à son bloc d'étude. */
+/** Un calque de la pile, du plus visible au plus enfoui. */
+export type Layer = {
+  /** Identifie le calque en CSS et relie son étiquette à son texte. */
   id: string;
   /** Étiquette de calque, en voix utilitaire. */
   label: string;
   /** Cote affichée à côté de l'étiquette. */
   cote: string;
-  /** Titre du temps d'étude de cas correspondant. */
+  /** Quel visuel le calque porte. Le composant en décide le rendu. */
+  visual: string;
+  /** Titre du temps de lecture, quand la caméra se pose dessus. */
   title: string;
-  /** Ce que la pièce prouve, en langage de visiteur. */
+  /** Ce que le calque change pour le restaurant, en langage de visiteur. */
   body: string;
   /** Étiquettes techniques, à l'écart du texte courant. */
   specs: TechSpec[];
@@ -83,74 +85,107 @@ export const carteRestaurant = {
     intro: {
       index: "01",
       title: "La page, démontée",
-      note: "Un site n’est pas une image. C’est un empilement de pièces dont la moitié ne se voit jamais.",
+      note: "Un site n’est pas une image. C’est un empilement de calques dont la moitié ne se voit jamais. Faites défiler : la pile s’ouvre, puis on la traverse.",
     } satisfies SectionIntro,
 
     /**
-     * Décrit la scène pour qui ne voit pas l'écran.
-     *
-     * Ne promet pas les quatre pièces : sous 48 rem elles ne sont pas rendues,
-     * seul le portable l'est. Le texte renvoie donc à la section suivante, qui
-     * les porte toutes, à toutes les largeurs.
+     * Décrit la pile pour qui ne voit pas l'écran. Les sept calques sont
+     * ensuite énumérés en texte réel, donc ce paragraphe dit la forme, pas le
+     * contenu.
      */
     description:
-      "Schéma d’un ordinateur portable affichant la carte du restaurant, accompagné des quatre pièces qui le composent : le premier écran, la carte des plats, l’API qui sert les données et l’interface de gestion. Sur grand écran, elles se détachent au défilement. Chacune est détaillée dans la section suivante.",
+      "Schéma en perspective : les sept calques qui composent le site du restaurant, empilés puis écartés les uns des autres, de la page visible jusqu’aux serveurs qui la font tourner.",
 
-    screen: {
-      alt: "Page d’accueil du site : le titre « Le Restaurant » sur fond crème, avec un motif de feuillage au trait et une barre de navigation entrées, plats, desserts.",
-      label: "Écran",
-      cote: "1280 × 800",
-    },
+    /** Étiquette de l'axe, dans la voix utilitaire. */
+    axis: { near: "Ce qu’on voit", far: "Ce qui fait tourner" },
 
-    carte: {
-      alt: "Deux fiches de plats côte à côte : une photo, le nom du plat et sa description.",
+    /** Textes de remplacement des deux seules captures de la pile. */
+    alts: {
+      accueil:
+        "Page d’accueil du site : le titre « Le Restaurant » sur fond crème, avec un motif de feuillage au trait et une barre de navigation entrées, plats, desserts.",
+      carte:
+        "Deux fiches de plats côte à côte : une photo, le nom du plat et sa description.",
     },
   },
 
-  study: {
-    intro: {
-      index: "02",
-      title: "Pièce par pièce",
-      note: "Chaque morceau détaché, et ce qu’il change pour le restaurant.",
-    } satisfies SectionIntro,
-  },
-
-  pieces: [
+  /**
+   * Les sept calques, du plus visible au plus enfoui. L'ordre est celui de la
+   * traversée : la caméra part de la page et s'enfonce jusqu'aux conteneurs.
+   *
+   * Chaque chiffre cité est relevé dans le projet réel, pas estimé :
+   *   - 9 plats, 3 par catégorie      → GET /api/plats, totalItems et category
+   *   - 9 allergènes distincts        → union des tableaux `allergenes`
+   *   - 2 entrées d'administration    → MenuItem dans src/Controller/Admin
+   *   - 4 conteneurs                  → services de docker-compose.yml
+   * Ne pas les modifier sans les relever à nouveau.
+   */
+  layers: [
     {
       id: "ecran",
-      label: "Premier écran",
+      label: "Le premier écran",
       cote: "01",
+      visual: "capture-accueil",
       title: "Ce qu’on voit en arrivant",
-      body: "Le nom du restaurant, une phrase, et le sommaire de la carte en bas de l’écran. Un client qui cherche le menu avant de réserver sait où aller dès la première seconde. Le reste de la page est de la décoration, et la décoration passe après.",
-      specs: ["Next.js", "Rendu côté serveur", "Titre affiché en premier"],
+      body: "Le nom du restaurant, une phrase, et le sommaire de la carte juste en dessous. Un client qui cherche le menu avant de réserver sait où aller dès la première seconde.",
+      specs: ["Next.js", "Rendu côté serveur"],
+    },
+    {
+      id: "navigation",
+      label: "La navigation",
+      cote: "02",
+      visual: "schema-nav",
+      title: "Trois entrées, pas une de plus",
+      body: "Entrées, plats, desserts. Un menu de restaurant n’a pas besoin d’autre chose, et chaque lien descend directement à sa section au lieu de recharger une page.",
+      specs: ["3 ancres", "Barre toujours visible"],
     },
     {
       id: "carte",
       label: "La carte",
-      cote: "02",
+      cote: "03",
+      visual: "capture-carte",
       title: "Neuf plats, aucun codé en dur",
-      body: "Les plats, leurs photos, leurs prix et leurs allergènes viennent tous de la base. Changer un prix ne demande pas de me rappeler, et retirer un plat de la carte du soir prend le temps de décocher une case.",
-      specs: ["PostgreSQL", "9 plats en base", "Allergènes normalisés"],
+      body: "Trois entrées, trois plats, trois desserts. Leurs photos, leurs prix et leurs allergènes viennent tous de la base. Retirer un plat de la carte du soir prend le temps de décocher une case.",
+      specs: ["9 plats", "3 par catégorie"],
     },
     {
       id: "api",
       label: "L’API",
-      cote: "03",
+      cote: "04",
+      visual: "code-api",
       title: "La partie qu’on ne voit jamais",
-      body: "Entre la base et la page, il y a une API qui sert les données dans un format standard. C’est elle qui permettra plus tard d’ajouter une commande en ligne ou une application, sans rien reconstruire. Voici ce qu’elle renvoie réellement pour une entrée.",
+      body: "Entre la base et la page, une API sert les données dans un format standard. C’est elle qui permettra d’ajouter une commande en ligne ou une application, sans rien reconstruire.",
       specs: ["Symfony", "API Platform", "JSON-LD"],
     },
     {
+      id: "base",
+      label: "La base",
+      cote: "05",
+      visual: "schema-base",
+      title: "Une seule table, bien remplie",
+      body: "Un plat, c’est une ligne : un nom, un prix, une catégorie, une photo, une liste d’allergènes et une case « visible ». Neuf allergènes différents sont gérés, avec les noms officiels européens.",
+      specs: ["PostgreSQL", "9 allergènes normalisés"],
+    },
+    {
       id: "gestion",
-      label: "Gestion",
-      cote: "04",
+      label: "La gestion",
+      cote: "06",
+      visual: "schema-gestion",
       title: "Le restaurant reprend la main",
       body: "Une interface protégée par mot de passe, où l’on ajoute un plat, on téléverse sa photo et on le publie. C’est la différence entre un site qu’il faut faire modifier et un site dont on est propriétaire.",
-      specs: ["EasyAdmin", "Accès protégé", "Téléversement d’images"],
+      specs: ["EasyAdmin", "Accès protégé"],
     },
-  ] satisfies Piece[],
+    {
+      id: "hebergement",
+      label: "L’hébergement",
+      cote: "07",
+      visual: "schema-hebergement",
+      title: "Quatre machines qui n’en font qu’une",
+      body: "La base, le serveur, le routeur d’adresses et le site public tournent chacun dans leur boîte. C’est ce qui permet de remonter l’ensemble à l’identique ailleurs, sans repartir de zéro.",
+      specs: ["Docker", "4 conteneurs"],
+    },
+  ] satisfies Layer[],
 
-  /** Le bloc de code de la pièce « API ». */
+  /** Le bloc de code du calque « API ». */
   api: {
     caption: "Réponse de /api/plats, premier élément",
     code: API_EXTRAIT,
@@ -177,6 +212,34 @@ export const carteRestaurant = {
     menu: ["Tableau de bord", "Carte & Plats"],
     fieldsLabel: "Ce qu’on remplit pour un plat",
     fields: ["Nom", "Description", "Prix", "Catégorie", "Allergènes", "Photo", "Visible"],
+  },
+
+  /** Les trois catégories et leur compte, relevés sur l'API. */
+  base: {
+    caption: "Table « plat », neuf lignes",
+    columns: ["Nom", "Prix", "Catégorie", "Allergènes", "Visible"],
+    counts: [
+      { label: "Entrées", value: "3" },
+      { label: "Plats", value: "3" },
+      { label: "Desserts", value: "3" },
+    ],
+  },
+
+  /** Les quatre services de `docker-compose.yml`, dans l'ordre du fichier. */
+  hebergement: {
+    caption: "Quatre conteneurs",
+    services: [
+      { name: "database", role: "PostgreSQL" },
+      { name: "backend", role: "Symfony" },
+      { name: "nginx", role: "Routeur d’adresses" },
+      { name: "frontend", role: "Next.js" },
+    ],
+  },
+
+  /** Les trois ancres de la barre de navigation du site décrit. */
+  navigation: {
+    caption: "Les trois ancres",
+    items: ["Entrées", "Plats", "Desserts"],
   },
 
   stack: {

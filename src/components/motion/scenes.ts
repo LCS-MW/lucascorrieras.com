@@ -356,76 +356,23 @@ export const SCENES = {
   },
 
   /**
-   * Étude de cas : chaque pièce est découverte, pas révélée.
+   * Vue éclatée : la pile s'ouvre, puis la caméra la traverse calque par
+   * calque.
    *
-   * Le filet se trace, la pièce se dégage de sous son masque, le texte suit.
-   * C'est le geste de la grille de réalisations (`projects`), repris tel quel
-   * parce qu'il dit la même chose : on découvre un écran.
+   * Un seul déclencheur, une seule progression, et trois scalaires écrits à
+   * partir d'elle. Rien n'est animé en JavaScript : le CSS fait toute la
+   * géométrie, comme pour la section maquette.
    *
-   * Surtout, ce n'est pas un fondu montant posé sur chaque bloc. Une première
-   * version faisait exactement ça, `opacity` et `y` sur le corps entier de
-   * chaque rangée, ce que le CLAUDE.md interdit nommément.
-   */
-  caseStudy(api: SceneApi) {
-    revealHeading(api, enter(api));
-
-    for (const row of api.qa('[data-reveal="row"]')) {
-      const tl = api.gsap.timeline({
-        defaults: { ease: EASE.reveal },
-        scrollTrigger: { trigger: row, start: "top 85%", once: true },
-      });
-
-      const rule = row.querySelector('[data-reveal="row-rule"]');
-      const visual = row.querySelector('[data-reveal="row-visual"]');
-      const body = row.querySelector('[data-reveal="row-body"]');
-
-      if (rule) {
-        tl.fromTo(
-          rule,
-          { scaleX: 0 },
-          { scaleX: 1, duration: 0.5, ease: EASE.travel },
-          0,
-        );
-      }
-      if (visual) {
-        tl.fromTo(
-          visual,
-          { yPercent: 100, scale: 1.04 },
-          { yPercent: 0, scale: 1, duration: 0.8 },
-          0.12,
-        );
-      }
-      if (body) {
-        tl.fromTo(body, { yPercent: 100 }, { yPercent: 0, duration: 0.7 }, 0.26);
-      }
-    }
-  },
-
-  /**
-   * Vue éclatée : la section est épinglée, le scroll sépare les pièces de la
-   * machine. Même contrat que `showcase` — un seul scalaire écrit par image,
-   * tout le reste calculé en CSS, donc rien qui touche à la mise en page.
-   *
-   * ⚠️ La section n'est **pas** épinglée, et c'est un choix, pas un oubli.
-   * L'accueil épingle déjà sa section maquette. Deux épinglages sur le même
-   * site, c'est le même tour joué deux fois : le vocabulaire devient une
-   * décoration répétée, ce que le CLAUDE.md interdit. Ici le scrub est branché
-   * sur la traversée naturelle de la section, sans retenir le défilement.
-   *
-   * L'éclatement est donc terminé quand la section arrive au centre de
-   * l'écran, et il y reste : après `end`, la progression vaut 1 et ne bouge
-   * plus. On lit la suite avec les pièces séparées sous les yeux, au lieu de
-   * les voir se refermer.
+   * La section est épinglée, et c'est nécessaire ici : la caméra a besoin de
+   * temps pour se poser sur sept calques, et sans retenue elle les survolerait
+   * tous en une hauteur d'écran. C'est le seul endroit du site avec l'accueil,
+   * et les deux gestes ne se ressemblent pas — là un fondu entre deux couches,
+   * ici un déplacement dans la profondeur.
    *
    * Le seuil passe par `gsap.matchMedia()` et non par un `window.matchMedia`
-   * lu une fois. La lecture unique cassait dans les deux sens, mesuré :
-   * chargé large puis rétréci, la cale de l'épinglage restait insérée et le
-   * document gardait 1 218 px de vide pour une animation qui ne tournait plus ;
-   * chargé étroit puis élargi, aucun déclencheur n'était jamais créé et la vue
-   * éclatée restait morte, pièces figées derrière la machine.
-   *
-   * Sous 48 rem, rien n'est branché : le CSS y réduit la scène au portable
-   * seul.
+   * lu une fois. La lecture unique cassait dans les deux sens, mesuré : chargé
+   * large puis rétréci, la cale de l'épinglage restait ; chargé étroit puis
+   * élargi, aucun déclencheur n'était jamais créé.
    */
   eclat(api: SceneApi) {
     revealHeading(api, enter(api));
@@ -437,24 +384,75 @@ export const SCENES = {
     const mm = api.gsap.matchMedia();
 
     mm.add("(width >= 48rem)", () => {
+      const dernier = api.qa("[data-eclat-calque]").length - 1;
+      if (dernier < 1) return;
+
+      // Découpage de la course, en fractions de la progression totale.
+      // 18 % pour ouvrir la pile, 7 % pour que la caméra prenne la main, le
+      // reste pour la traverser. Sept calques ont besoin de la part du lion.
+      const OUVERTURE = 0.18;
+      const PRISE = 0.07;
+      const DEPART = OUVERTURE + PRISE;
+
+      const ecrire = (nom: string, valeur: number) => {
+        stage.style.setProperty(nom, valeur.toFixed(4));
+      };
+
+      /**
+       * Part de la course d'un calque au suivant passée à l'arrêt sur le
+       * calque. Le reste est le trajet.
+       *
+       * Sans cette pause, la caméra glissait sans jamais s'arrêter : mesuré,
+       * la légende disparaissait complètement à mi-chemin entre deux calques,
+       * et un tiers de la traversée se faisait sans aucun texte à l'écran.
+       */
+      const ARRET = 0.5;
+      const trajet = api.gsap.parseEase("power2.inOut");
+
+      /** Position continue de la caméra, avec un palier sur chaque calque. */
+      const viser = (avance: number) => {
+        const brut = avance * dernier;
+        const calque = Math.floor(brut);
+        const part = brut - calque;
+        if (part <= ARRET) return Math.min(dernier, calque);
+        return Math.min(dernier, calque + trajet((part - ARRET) / (1 - ARRET)));
+      };
+
       const trigger = api.ScrollTrigger.create({
         trigger: piste,
-        start: "top 85%",
-        end: "center 45%",
-        scrub: 0.5,
+        start: "top top",
+        end: "+=380%",
+        pin: true,
+        pinSpacing: true,
+        scrub: 0.6,
         invalidateOnRefresh: true,
         onUpdate: (self) => {
-          stage.style.setProperty("--eclat-progress", self.progress.toFixed(4));
+          const t = self.progress;
+          ecrire("--eclat-progress", Math.min(1, t / OUVERTURE));
+          ecrire(
+            "--eclat-zoom",
+            Math.max(0, Math.min(1, (t - OUVERTURE) / PRISE)),
+          );
+          ecrire(
+            "--eclat-camera",
+            viser(Math.max(0, Math.min(1, (t - DEPART) / (1 - DEPART)))),
+          );
         },
       });
 
-      // La propriété est retirée et pas remise à zéro : la valeur de repos
-      // appartient à la feuille de style, et `prefers-reduced-motion` y pose
-      // 1. Écrire 0 ici figerait la scène assemblée pour qui a demandé à
+      // Les propriétés sont retirées, pas remises à zéro : les valeurs de
+      // repos appartiennent à la feuille de style, et `prefers-reduced-motion`
+      // y ouvre la pile. Écrire 0 ici la refermerait pour qui a demandé à
       // réduire les animations en cours de visite.
       return () => {
         trigger.kill();
-        stage.style.removeProperty("--eclat-progress");
+        for (const nom of [
+          "--eclat-progress",
+          "--eclat-zoom",
+          "--eclat-camera",
+        ]) {
+          stage.style.removeProperty(nom);
+        }
       };
     });
 

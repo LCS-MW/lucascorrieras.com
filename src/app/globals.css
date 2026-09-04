@@ -654,199 +654,235 @@ a:focus-visible .link-underline::after {
    Vue éclatée
    ==========================================================================
 
-   Même contrat que la section maquette juste au-dessus : un seul scalaire,
-   `--eclat-progress`, écrit par le scrub. 0 = machine assemblée, 1 = pièces
-   séparées. Toute la géométrie se calcule ici, aucune propriété n'est animée
-   en JavaScript.
+   Sept calques, du premier écran jusqu'aux conteneurs. Ils s'étagent en
+   diagonale sous une perspective : chacun reste entièrement visible, aucun
+   n'en masque un autre. Une première version en posait quatre aux quatre
+   coins, ce qui n'était pas une vue éclatée mais un quadrillage animé.
 
-   Deux régimes. Sous 48 rem il n'y a pas de scène : le portable seul, en bloc
-   ordinaire, et les pièces disparaissent — elles sont reprises juste en
-   dessous, en taille de lecture. Au-dessus, la scène s'ouvre et l'éclatement
-   se joue au défilement.
+   Trois scalaires écrits par le scrub, tout le reste calculé ici :
+     --eclat-progress  0 → 1   la pile s'ouvre
+     --eclat-camera    0 → 6   la caméra se pose sur chaque calque
+     --eclat-zoom      0 → 1   la caméra prend la main sur la vue d'ensemble
 
-   Les distances sont des entiers sans unité, portés par chaque pièce, et
-   multipliés par `1cqw`, un centième de la largeur de la scène. Elles suivent
-   donc la scène et non le viewport : réglées sur le viewport, elles sortaient
-   du cadre par la gauche dès que la fenêtre passait sous 1024 px, la scène
-   rétrécissant alors que les écarts, eux, ne bougeaient plus.
+   Les distances sont des nombres sans unité multipliés par `1cqw`, un
+   centième de la largeur de la scène : elles suivent la scène et non le
+   viewport. Réglées sur le viewport, les calques sortaient du cadre dès que
+   la fenêtre passait sous 1024 px.
    -------------------------------------------------------------------------- */
 
 [data-eclat] {
   --eclat-progress: 0;
+  --eclat-camera: 0;
+  --eclat-zoom: 0;
+
+  /* Pas de nombre magique dispersé : l'éventail se règle ici.
+     Étalement total : 6 × 8 = 48 en x, 6 × 5.2 = 31,2 en y. Un calque fait
+     34 de large et 21,25 de haut (16/10), la scène 100 × 62,5. Les deux
+     tiennent donc dans le cadre avec 18 et 10 d'air. */
+  --pas-x: 8;
+  --pas-y: 5.2;
+  --calque: 34;
+  --profondeur: 62px;
 }
 
-/* ---- Sous 48 rem : le schéma à plat ------------------------------------- */
+/* ---- La liste des légendes, base commune -------------------------------- */
 
-/* Pas de scrub, pas d'éclatement, mais pas non plus une section vide. Le
-   portable en haut, les quatre pièces en dessous, deux par deux. C'est le même
-   contenu que la scène, posé au lieu d'être animé.
-   Une première version n'y laissait que le portable : sous un titre qui
-   annonce « la page, démontée », la moitié du trafic voyait un écran et rien
-   d'autre. */
-[data-eclat-stage] {
+[data-eclat-legende] p:first-child {
+  letter-spacing: var(--text-label--letter-spacing);
+}
+
+/* ---- Sous 48 rem : la pile à plat --------------------------------------- */
+
+/* Pas de perspective, pas de caméra, pas d'épinglage. Les calques se lisent
+   en grille et les légendes se suivent. C'est la bonne lecture au pouce, et
+   un défilement retenu y enferme le visiteur sans rien lui apprendre. */
+[data-eclat-pile] {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  align-items: start;
-  gap: 1.5rem 1rem;
+  /* `minmax(0, 1fr)` et non `1fr` : la largeur minimale d'une piste vaut
+     celle de son contenu, et le calque « API » porte un bloc de code en
+     `white-space: pre` qui impose alors la longueur de sa plus longue ligne à
+     toute la page. Mesuré : 352 px de débordement à 390 px de large, malgré
+     l'`overflow: hidden` posé sur le bloc lui-même. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1.25rem 1rem;
 }
 
-[data-eclat-machine] {
-  grid-column: 1 / -1;
-  margin-inline: auto;
+[data-eclat-etiquette] {
+  display: flex;
   margin-block-end: 0.5rem;
-  max-width: 30rem;
-  background-color: var(--color-paper);
 }
 
-/* Les lignes de rappel ne veulent rien dire hors de la scène : elles relient
-   une pièce à une machine dont elle n'est plus voisine. */
-[data-eclat-leader] {
+[data-eclat-axe] {
   display: none;
 }
 
-[data-eclat-screen] {
-  position: relative;
-  aspect-ratio: 16 / 10;
-  overflow: hidden;
-  /* Le trait passe du texte au filet : une coque vidée n'a pas à être
-     dessinée aussi fort qu'un écran allumé. */
-  border: 1px solid
-    color-mix(
-      in oklab,
-      var(--color-rule) calc(var(--eclat-progress) * 100%),
-      var(--color-ink)
-    );
+[data-eclat-legendes] {
+  margin-block-start: 3rem;
+  display: grid;
+  gap: 2.5rem;
 }
 
-/* Base du portable : un trapèze au trait, pas un rendu. */
-[data-eclat-base] {
-  height: 0.85rem;
-  margin-inline: -1rem;
-  border-right: 1px solid var(--color-rule);
-  border-bottom: 1px solid var(--color-rule);
-  border-left: 1px solid var(--color-rule);
-  background-color: var(--color-surface);
-  clip-path: polygon(0 0, 100% 0, calc(100% - 1rem) 100%, 1rem 100%);
-}
-
-/* ---- La scène, au-dessus de 48 rem -------------------------------------- */
+/* ---- Au-dessus de 48 rem : la scène ------------------------------------- */
 
 @media (width >= 48rem) {
-  [data-eclat-stage] {
-    /* Ouvre les unités de conteneur pour tout ce qui suit. `inline-size` et
-       non `size` : la hauteur vient du ratio, la contenir n'apporte rien. */
+  /* La piste occupe une hauteur d'écran : c'est elle qui est épinglée, et la
+     scène doit tenir dedans avec ses légendes. */
+  [data-eclat-piste] {
+    display: flex;
+    min-height: 100svh;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2.5rem;
+  }
+
+  [data-eclat-scene] {
     container-type: inline-size;
-
-    /* Facteur commun. `--dx: 32` vaut donc 28 % de la largeur de la scène,
-       quelle que soit cette largeur. */
-    --scale: 0.88;
-
     position: relative;
-    display: block;
     margin-inline: auto;
+    /* La hauteur commande, la largeur suit : sur un portable de 700 px de
+       haut, une scène réglée sur la largeur déborderait de l'écran épinglé. */
+    height: min(52svh, 30rem);
+    width: auto;
+    max-width: 100%;
     aspect-ratio: 16 / 10;
-    width: 100%;
-    max-width: 64rem;
+    perspective: 1400px;
+    /* La scène recadre. Quand la caméra s'enfonce, les premiers calques
+       sortent par le haut : sans ça ils débordaient de 128 px et venaient se
+       poser sur le titre de section. Une caméra qui s'approche ne montre pas
+       tout, c'est le propre du cadrage. */
+    overflow: hidden;
   }
 
-  [data-eclat-machine] {
-    margin-block-end: 0;
-  }
-
-  /* La machine passe **devant** les pièces, et son fond est opaque.
-     C'est ce qui fait que les pièces en sortent au lieu de la recouvrir :
-     mesuré, elles ne dégagent complètement son gabarit qu'à 92 % de la
-     course, et derrière elle sur tout le reste du trajet. Rangée dessous,
-     elle disparaissait sous un bloc de quatre cartes pendant les deux tiers
-     du défilement.
-
-     Le niveau 3 la place aussi au-dessus des lignes de rappel, qui partent du
-     centre exact et la traverseraient. */
-  [data-eclat-machine] {
+  [data-eclat-pile] {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    z-index: 3;
-    width: 40%;
-    max-width: none;
-    translate: -50% -50%;
-    /* Elle recule pendant que les pièces avancent. Sans ça, l'écran vidé
-       reste le plus gros objet de la scène et attire l'œil alors qu'il ne
-       contient plus rien. */
-    scale: calc(1 - var(--eclat-progress) * 0.28);
-  }
-
-  [data-eclat-base] {
-    height: 1.9cqw;
-    margin-inline: -2cqw;
-    clip-path: polygon(0 0, 100% 0, calc(100% - 2cqw) 100%, 2cqw 100%);
-  }
-
-  /* ---- Les lignes de rappel --------------------------------------------- */
-
-  /* Une ligne par pièce. Elle ne part pas du centre mais du bord de la
-     machine — `--start` — et s'allonge jusqu'à la pièce au fil du scrub.
-     `transform` et non les propriétés séparées : il faut tourner d'abord,
-     puis avancer le long de l'axe tourné, et l'ordre des propriétés
-     individuelles est fixé à translate, rotate, scale. */
-  [data-eclat-leader] {
     display: block;
+    inset: 0;
+    gap: 0;
+    transform-style: preserve-3d;
+    /* La caméra ramène au centre le calque qu'elle vise, et s'en approche.
+       `--eclat-zoom` fait le fondu entre la vue d'ensemble et la traversée. */
+    transform: translate(
+        calc(
+          (3 - var(--eclat-camera)) * var(--pas-x) * var(--eclat-zoom) * 1cqw
+        ),
+        calc(
+          (3 - var(--eclat-camera)) * var(--pas-y) * var(--eclat-zoom) * 1cqw
+        )
+      )
+      scale(calc(1 + 0.22 * var(--eclat-zoom)))
+      rotateX(calc(var(--eclat-progress) * 6deg));
+  }
+
+  [data-eclat-calque] {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    z-index: 0;
-    height: 1px;
-    width: calc(
-      (var(--len) - var(--start)) * var(--scale) * var(--eclat-progress) * 1cqw
+    width: calc(var(--calque) * 1cqw);
+    /* Au repos les sept calques sont exactement superposés au centre : la
+       pile est une page, et c'est le propos. Ils s'écartent ensuite de part
+       et d'autre de ce centre, d'où les demi-étalements retranchés. */
+    left: calc(
+      (100 - var(--calque)) / 2 * 1cqw +
+        (var(--i) * var(--pas-x) - 3 * var(--pas-x)) * var(--eclat-progress) *
+        1cqw
     );
-    transform: rotate(var(--angle))
-      translateX(calc(var(--start) * var(--scale) * 1cqw));
-    transform-origin: 0 50%;
+    top: calc(
+      (62.5 - var(--calque) * 0.625) / 2 * 1cqw +
+        (var(--i) * var(--pas-y) - 3 * var(--pas-y)) * var(--eclat-progress) *
+        1cqw
+    );
+    transform: translateZ(
+      calc(var(--i) * var(--profondeur) * var(--eclat-progress) * -1)
+    );
+    /* Distance signée au calque visé, puis sa cloche : 1 dessus, 0 au-delà
+       d'un peu plus d'un calque. `abs()` n'est pas assez répandu, on passe
+       par le carré, qui est de toute façon la bonne courbe ici. */
+    --d: calc(var(--i) - var(--eclat-camera));
+    --f: max(0, calc(1 - var(--d) * var(--d) * 2.2));
+    opacity: calc(1 - var(--eclat-zoom) * (0.87 - 0.87 * var(--f)));
+    will-change: transform, opacity;
+  }
+
+  /* Le calque visé se souligne au filet d'accent. Rien d'autre ne le
+     distingue : ni ombre, ni fond, ni agrandissement propre. */
+  [data-eclat-calque] [data-eclat-carte] {
+    border-color: color-mix(
+      in oklab,
+      var(--color-accent) calc(var(--f) * var(--eclat-zoom) * 100%),
+      var(--color-rule)
+    );
+  }
+
+  /* ---- La cote de profondeur -------------------------------------------- */
+
+  [data-eclat-axe] {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    inset-block-end: -1.75rem;
+    inset-inline: 0;
+    opacity: calc(var(--eclat-progress) * (1 - var(--eclat-zoom)));
+  }
+
+  [data-eclat-axe-trait] {
+    height: 1px;
+    flex: 1;
     background-color: var(--color-rule);
   }
 
-  /* ---- Les pièces -------------------------------------------------------- */
+  /* ---- Les légendes ------------------------------------------------------ */
 
-  [data-eclat-piece] {
+  /* Empilées au même endroit : une seule est lisible à la fois, mais les sept
+     restent dans l'ordre du document pour qui les écoute. La hauteur est
+     réservée d'avance, sinon le bloc grandirait à chaque changement de
+     légende et ferait sauter la scène au-dessus. */
+  [data-eclat-legendes] {
+    position: relative;
     display: block;
+    margin-block-start: 0;
+    margin-inline: auto;
+    min-height: 11rem;
+    width: 100%;
+    max-width: 42rem;
+  }
+
+  [data-eclat-legende] {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    z-index: 2;
-    width: 22%;
-    translate:
-      calc(-50% + var(--dx) * var(--scale) * var(--eclat-progress) * 1cqw)
-      calc(-50% + var(--dy) * var(--scale) * var(--eclat-progress) * 1cqw);
-    /* Quatre nœuds, pas un de plus : au-delà on sature la mémoire du GPU. */
-    will-change: transform;
+    inset-block-start: 0;
+    inset-inline: 0;
+    --d: calc(var(--i) - var(--eclat-camera));
+    /* Fenêtre un peu plus large que celle des calques : la légende doit
+       tenir pendant tout le palier et ne s'effacer que sur le trajet. */
+    opacity: calc(
+      var(--eclat-zoom) * max(0, calc(1 - var(--d) * var(--d) * 4))
+    );
   }
-
-  /* La capture tient toute la première moitié, puis s'efface d'un coup.
-     L'écran doit encore être allumé pendant que les pièces sortent de derrière
-     lui, sinon la machine n'est plus qu'un rectangle blanc posé au milieu
-     pendant les deux tiers du défilement. Il finit vide, ce qui est le propos :
-     ses parties en sont sorties.
-
-     La règle vit ici, dans la requête média, et pas au-dessus. Sous 48 rem il
-     n'y a pas de scrub, mais `prefers-reduced-motion` pose quand même la
-     progression à 1 : au dehors, elle éteignait l'écran du portable sur tout
-     mobile réglé en mouvement réduit, et il ne restait qu'un cadre vide. */
-  [data-eclat-screen] img {
-    opacity: clamp(0, (1 - var(--eclat-progress)) * 2.2, 1);
-  }
-
-  /* Aucune opacité sur les pièces au repos, et c'est délibéré : `scenes.ts`
-     interdit qu'un état masqué de départ soit posé en CSS, parce qu'un chunk
-     GSAP qui n'arrive pas laisserait alors du contenu invisible pour toujours.
-     Ce qui les cache à progression 0, c'est la machine elle-même — fond
-     opaque, niveau 3, et un gabarit plus grand qu'elles dans les deux
-     dimensions. */
 }
 
-/* Mouvement réduit : l'état éclaté d'emblée, pas la même chose en plus lent. */
+/* Mouvement réduit : la pile ouverte et les légendes lisibles d'emblée, pas
+   la même séquence en plus lent. La caméra n'entre pas en jeu — elle n'a de
+   sens qu'en mouvement — donc les légendes reprennent le fil normal. */
 @media (prefers-reduced-motion: reduce) {
   [data-eclat] {
     --eclat-progress: 1;
+    --eclat-zoom: 0;
+  }
+
+  @media (width >= 48rem) {
+    [data-eclat-piste] {
+      min-height: 0;
+    }
+
+    [data-eclat-legendes] {
+      position: static;
+      display: grid;
+      min-height: 0;
+      gap: 2.5rem;
+    }
+
+    [data-eclat-legende] {
+      position: static;
+      opacity: 1;
+    }
   }
 }
 

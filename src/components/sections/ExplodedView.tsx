@@ -6,120 +6,171 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { carteRestaurant } from "@/content/case-studies";
 
 const HEADING_ID = "eclate-titre";
-const { explode, pieces } = carteRestaurant;
+const { explode, layers, api, gestion, base, hebergement, navigation } =
+  carteRestaurant;
 
-/**
- * Position finale de chaque pièce, en centièmes de la largeur de la scène.
- *
- * `angle` est bien atan2(dy, dx) : 34,51° pour le vecteur (32, 22).
- *
- * `len` en revanche n'est PAS √(dx² + dy²), qui vaudrait 38,83. La ligne de
- * rappel s'arrête volontairement à 30, soit huit unités avant le centre de la
- * pièce, pour ne pas passer dessous. Ne pas la « corriger » à 38,83 en croyant
- * réparer une erreur de calcul.
- *
- * `start` est le rayon où la ligne commence : 18 unités, soit le bord de la
- * machine une fois qu'elle a reculé. En deçà elle serait cachée derrière elle
- * de toute façon, la machine ayant un fond opaque.
- *
- * Les valeurs sont écrites plutôt que calculées au rendu : elles ne changent
- * jamais, et une trigonométrie exécutée dans un composant serveur rendrait la
- * même chose à chaque requête.
- */
-const GEOMETRY: Record<
-  string,
-  { dx: number; dy: number; len: number; angle: string; start: number }
-> = {
-  ecran: { dx: -32, dy: -22, len: 30, angle: "-145.49deg", start: 18 },
-  carte: { dx: 32, dy: -22, len: 30, angle: "-34.51deg", start: 18 },
-  api: { dx: -32, dy: 22, len: 30, angle: "145.49deg", start: 18 },
-  gestion: { dx: 32, dy: 22, len: 30, angle: "34.51deg", start: 18 },
-};
-
-/**
- * Les pièces réellement plaçables. Ajouter une entrée à `pieces` sans lui
- * donner de géométrie ne doit pas faire tomber la page : `GEOMETRY[id]`
- * rendrait `undefined`, et lire `.len` dessus casse le rendu serveur, donc la
- * route entière, sans que TypeScript n'ait rien à redire sur un `id: string`.
- * La pièce est simplement absente du schéma ; son bloc d'étude, lui, reste.
- */
-const PLACEES = pieces.filter((piece) => piece.id in GEOMETRY);
-
-/** Barre de maquette, comme dans la section « maquette → site ». */
+/** Barre de maquette, dans la voix des schémas du site. */
 function Bar({ className }: { className: string }) {
   return <span className={`bg-ink-2/30 block ${className}`} />;
 }
 
 /**
- * Visuel d'une pièce dans la scène. Volontairement muet pour l'API et la
- * gestion : à 22 % de la largeur de la scène, du texte y serait illisible, et
- * une vignette illisible est une décoration. Le contenu réel est dans les
- * blocs d'étude, en dessous.
+ * Contenu d'un calque.
+ *
+ * Deux calques seulement portent une capture, et ce sont les deux seules
+ * choses réellement visibles du site. Les cinq autres n'ont pas d'apparence :
+ * une API, une table, un back-office protégé et quatre conteneurs ne se
+ * photographient pas. Ils sont donc dessinés, avec leurs vraies valeurs, et
+ * jamais mis en scène comme des captures qu'ils ne sont pas.
  */
-function PieceVisual({ id }: { id: string }) {
-  if (id === "ecran") {
-    return (
-      <Image
-        src="/demonstrations/ecran-accueil.avif"
-        alt=""
-        width={1280}
-        height={800}
-        sizes="(min-width: 64rem) 226px, 22vw"
-        className="block h-full w-full object-cover object-top"
-      />
-    );
-  }
+function LayerVisual({ visual }: { visual: string }) {
+  switch (visual) {
+    case "capture-accueil":
+      return (
+        <Image
+          src="/demonstrations/ecran-accueil.avif"
+          alt={explode.alts.accueil}
+          width={1280}
+          height={800}
+          sizes="(min-width: 64rem) 350px, 34vw"
+          className="block h-full w-full object-cover object-top"
+        />
+      );
 
-  if (id === "carte") {
-    return (
-      <Image
-        src="/demonstrations/ecran-carte.avif"
-        alt=""
-        width={960}
-        height={600}
-        sizes="(min-width: 64rem) 226px, 22vw"
-        className="block h-full w-full object-cover object-top"
-      />
-    );
-  }
+    case "capture-carte":
+      return (
+        <Image
+          src="/demonstrations/ecran-carte.avif"
+          alt={explode.alts.carte}
+          width={960}
+          height={600}
+          sizes="(min-width: 64rem) 350px, 34vw"
+          className="block h-full w-full object-cover object-top"
+        />
+      );
 
-  if (id === "api") {
-    // Quatre lignes de longueur décroissante : la silhouette d'un objet JSON,
-    // sans prétendre qu'on puisse le lire.
-    return (
-      <div className="flex h-full flex-col justify-center gap-2 p-4">
-        <span className="bg-accent/70 block h-1.5 w-3/5" />
-        <span className="bg-accent/70 block h-1.5 w-4/5" />
-        <span className="bg-accent/70 block h-1.5 w-2/5" />
-        <span className="bg-accent/70 block h-1.5 w-3/4" />
-      </div>
-    );
-  }
+    case "schema-nav":
+      return (
+        // Les trois libellés doivent tenir dans une vignette de 34 % de la
+        // scène, et dans une demi-colonne sur téléphone. Ils se partagent la
+        // largeur à parts égales et se coupent proprement plutôt que de
+        // déborder du cadre par les deux bords.
+        <div className="flex h-full flex-col items-center justify-center gap-3 p-4">
+          <div className="border-rule flex w-full gap-2 border px-2 py-2">
+            {navigation.items.map((item) => (
+              <span
+                key={item}
+                className="font-mono text-label text-ink-2 min-w-0 flex-1 truncate text-center uppercase"
+              >
+                {item}
+              </span>
+            ))}
+          </div>
+          <div className="flex w-full gap-2">
+            {navigation.items.map((item) => (
+              <span key={item} className="flex flex-1 justify-center">
+                <span className="bg-accent block h-3 w-px" />
+              </span>
+            ))}
+          </div>
+        </div>
+      );
 
-  // Gestion : une barre d'en-tête et trois lignes de tableau.
-  return (
-    <div className="flex h-full flex-col gap-2 p-4">
-      <Bar className="h-2 w-1/2" />
-      <span className="bg-rule mt-1 block h-px w-full" />
-      <Bar className="h-1.5 w-full" />
-      <Bar className="h-1.5 w-full" />
-      <Bar className="h-1.5 w-3/4" />
-    </div>
-  );
+    case "code-api":
+      return (
+        <div className="h-full overflow-hidden p-4">
+          <pre className="overflow-hidden">
+            <code className="font-mono text-ink text-label leading-relaxed whitespace-pre">
+              {api.code}
+            </code>
+          </pre>
+        </div>
+      );
+
+    case "schema-base":
+      return (
+        <div className="flex h-full flex-col justify-center gap-3 p-5">
+          <div className="border-rule flex gap-3 border-b pb-2">
+            {base.columns.map((column) => (
+              <span
+                key={column}
+                className="font-mono text-label text-accent truncate uppercase"
+              >
+                {column}
+              </span>
+            ))}
+          </div>
+          {base.counts.map((count) => (
+            <div key={count.label} className="flex items-center gap-3">
+              <span className="font-mono text-label text-ink-2 w-16 uppercase">
+                {count.label}
+              </span>
+              <Bar className="h-1.5 flex-1" />
+              <span className="font-mono text-label text-ink">
+                {count.value}
+              </span>
+            </div>
+          ))}
+        </div>
+      );
+
+    case "schema-gestion":
+      return (
+        <div className="flex h-full flex-col gap-2 p-5">
+          {gestion.menu.map((item) => (
+            <span
+              key={item}
+              className="border-rule font-mono text-label text-ink-2 block border px-3 py-1.5 uppercase"
+            >
+              {item}
+            </span>
+          ))}
+          <span className="bg-rule mt-1 block h-px w-full" />
+          <Bar className="h-1.5 w-full" />
+          <Bar className="h-1.5 w-4/5" />
+          <Bar className="h-1.5 w-3/5" />
+        </div>
+      );
+
+    default:
+      return (
+        <div className="grid h-full grid-cols-2 content-center gap-2 p-5">
+          {hebergement.services.map((service) => (
+            <div key={service.name} className="border-rule border p-2">
+              <p className="font-mono text-label text-accent truncate uppercase">
+                {service.name}
+              </p>
+              <p className="font-mono text-label text-ink-2 mt-1 truncate uppercase">
+                {service.role}
+              </p>
+            </div>
+          ))}
+        </div>
+      );
+  }
 }
 
 /**
- * La page démontée : un portable au trait, la carte du restaurant dedans, et
- * quatre pièces qui s'en détachent au défilement.
+ * La pile du site, ouverte puis traversée.
  *
- * La scène entière est retirée de l'arbre d'accessibilité. Ce n'est pas une
- * négligence : chaque pièce est reprise en dessous, en texte réel, dans son
- * bloc d'étude. La laisser lisible ferait annoncer deux fois le même contenu,
- * une fois sous forme de diagramme muet. Le paragraphe `sr-only` dit ce que
- * la scène montre, ce qui est tout ce qu'elle apporte.
+ * Sept calques, du premier écran jusqu'aux conteneurs. Ils s'étagent en
+ * diagonale sous une perspective : chacun reste entièrement visible, aucun
+ * n'en masque un autre. Une première version en empilait quatre aux quatre
+ * coins, ce qui n'était pas une vue éclatée mais un quadrillage animé.
  *
- * Sous 48 rem la scène n'est pas affichée du tout : les blocs d'étude
- * suffisent, et ils sont mieux faits pour le pouce.
+ * Deux scalaires, écrits par le scrub, et tout le reste calculé en CSS :
+ *   `--eclat-progress`  0 → 1  la pile s'ouvre et bascule en perspective
+ *   `--eclat-camera`    0 → 6  la caméra se pose sur chaque calque à son tour
+ *
+ * Le texte de chaque calque vit dans la même pile, pas dans une liste en
+ * dessous : sortir de l'éclatement pour retomber dans un enchaînement de
+ * blocs ordinaires annulait tout l'effet.
+ *
+ * Seule la pile est décorative. Les légendes, elles, sont le contenu réel de
+ * la section : une liste ordonnée, lue dans l'ordre à toutes les largeurs,
+ * même quand une seule est visible à l'écran. Il n'y a donc pas de version
+ * `sr-only` en double, et sans JavaScript les sept légendes s'empilent
+ * simplement les unes sous les autres.
  */
 export function ExplodedView() {
   return (
@@ -127,74 +178,77 @@ export function ExplodedView() {
       <Section labelledBy={HEADING_ID}>
         <SectionHeading id={HEADING_ID} {...explode.intro} />
 
-        {/* Le paragraphe décrit la scène sans promettre les quatre pièces :
-            sous 48 rem elles ne sont pas rendues, seul le portable l'est. Il
-            renvoie donc à la section suivante, qui les porte toutes, à toutes
-            les largeurs. */}
-        <p className="sr-only">
-          {explode.description} {explode.screen.alt}
-        </p>
+        <p className="sr-only">{explode.description}</p>
 
         <div data-eclat className="mt-16">
           <div data-eclat-piste>
-            <div data-eclat-stage aria-hidden="true">
-              {/* Les lignes de rappel, sous la machine. */}
-              {PLACEES.map((piece) => {
-                const geo = GEOMETRY[piece.id as keyof typeof GEOMETRY];
-                return (
-                  <span
-                    key={piece.id}
-                    data-eclat-leader
-                    style={
-                      {
-                        "--len": geo.len,
-                        "--start": geo.start,
-                        "--angle": geo.angle,
-                      } as React.CSSProperties
-                    }
-                  />
-                );
-              })}
-
-              {/* ---- La machine ------------------------------------------ */}
-              <div data-eclat-machine>
-                <div data-eclat-screen>
-                  <Image
-                    src="/demonstrations/ecran-accueil.avif"
-                    alt=""
-                    width={1280}
-                    height={800}
-                    sizes="(min-width: 64rem) 410px, 40vw"
-                    className="block h-full w-full object-cover object-top"
-                  />
-                </div>
-                <div data-eclat-base />
+            {/* La pile est le schéma : décorative, doublée par les légendes,
+                qui portent le même contenu en texte réel et restent lues dans
+                l'ordre même quand une seule est visible à l'écran. */}
+            <div data-eclat-scene aria-hidden="true">
+              <div data-eclat-pile>
+                {layers.map((layer, index) => (
+                  <div
+                    key={layer.id}
+                    data-eclat-calque
+                    style={{ "--i": index } as React.CSSProperties}
+                  >
+                    <span
+                      data-eclat-etiquette
+                      className="font-mono text-label flex justify-between gap-3 uppercase"
+                    >
+                      <span className="text-accent">{layer.label}</span>
+                      <span className="text-ink-2">{layer.cote}</span>
+                    </span>
+                    <span
+                      data-eclat-carte
+                      className="border-rule bg-paper block aspect-[16/10] overflow-hidden border"
+                    >
+                      <LayerVisual visual={layer.visual} />
+                    </span>
+                  </div>
+                ))}
               </div>
 
-              {/* ---- Les pièces ------------------------------------------ */}
-              {PLACEES.map((piece) => {
-                const geo = GEOMETRY[piece.id as keyof typeof GEOMETRY];
-                return (
-                  <div
-                    key={piece.id}
-                    data-eclat-piece
-                    style={
-                      { "--dx": geo.dx, "--dy": geo.dy } as React.CSSProperties
-                    }
-                  >
-                    <div>
-                      <span className="font-mono text-label text-accent mb-2 flex justify-between gap-3 uppercase">
-                        <span>{piece.label}</span>
-                        <span className="text-ink-2">{piece.cote}</span>
-                      </span>
-                      <span className="border-rule bg-paper block aspect-[16/10] overflow-hidden border">
-                        <PieceVisual id={piece.id} />
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
+              {/* Cote de la pile : dit dans quel sens on s'enfonce. */}
+              <span data-eclat-axe className="font-mono text-label uppercase">
+                <span className="text-ink-2">{explode.axis.near}</span>
+                <span data-eclat-axe-trait />
+                <span className="text-ink-2">{explode.axis.far}</span>
+              </span>
             </div>
+
+            {/* Le texte du calque sur lequel la caméra est posée. C'est le
+                contenu réel de la section, pas un doublon : il est lu dans
+                l'ordre, à toutes les largeurs, et sans JavaScript les sept
+                légendes s'empilent simplement les unes sous les autres. */}
+            <ol data-eclat-legendes>
+              {layers.map((layer, index) => (
+                <li
+                  key={layer.id}
+                  data-eclat-legende
+                  style={{ "--i": index } as React.CSSProperties}
+                >
+                  <p className="font-mono text-label text-accent uppercase">
+                    {layer.cote} · {layer.label}
+                  </p>
+                  <h3 className="font-display text-display-sm text-ink mt-4">
+                    {layer.title}
+                  </h3>
+                  <p className="text-base text-ink-2 mt-4">{layer.body}</p>
+                  <ul className="mt-5 flex flex-wrap gap-x-5 gap-y-2">
+                    {layer.specs.map((spec) => (
+                      <li
+                        key={spec}
+                        className="font-mono text-label text-ink-2 uppercase"
+                      >
+                        {spec}
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              ))}
+            </ol>
           </div>
         </div>
       </Section>

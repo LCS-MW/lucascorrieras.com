@@ -1,4 +1,3 @@
-import { CaseStudyFocus } from "@/components/sections/CaseStudyFocus";
 import { CallToAction } from "@/components/sections/CallToAction";
 import { ExplodedView } from "@/components/sections/ExplodedView";
 import { PageEntrance } from "@/components/motion/PageEntrance";
@@ -69,10 +68,8 @@ export default function CarteRestaurantPage() {
 
       <ExplodedView />
 
-      <CaseStudyFocus tone="soft" />
-
       <Scene name="heading">
-        <Section labelledBy={STACK_HEADING_ID}>
+        <Section labelledBy={STACK_HEADING_ID} tone="soft">
           <SectionHeading id={STACK_HEADING_ID} {...stack.intro} />
 
           <dl className="border-rule mt-16 grid gap-x-12 gap-y-8 border-t pt-10 sm:grid-cols-2">
