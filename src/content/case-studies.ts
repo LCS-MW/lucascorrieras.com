@@ -185,10 +185,24 @@ export const carteRestaurant = {
     },
   ] satisfies Layer[],
 
-  /** Le bloc de code du calque « API ». */
+  /**
+   * Le calque « API ».
+   *
+   * `apercu` est ce que porte la vignette : le tableau complet ne tient pas
+   * dans un calque large de 32 % de la scène, et un bloc de code coupé au
+   * milieu d'une ligne se lit comme un défaut d'affichage. Les mêmes clés,
+   * dans le même ordre, avec l'omission signalée.
+   */
   api: {
     caption: "Réponse de /api/plats, premier élément",
     code: API_EXTRAIT,
+    apercu: `{
+  "@type": "Plat",
+  "prix": "22",
+  "category": "entree",
+  "isVisible": true,
+  ...
+}`,
   },
 
   /**
@@ -214,10 +228,17 @@ export const carteRestaurant = {
     fields: ["Nom", "Description", "Prix", "Catégorie", "Allergènes", "Photo", "Visible"],
   },
 
-  /** Les trois catégories et leur compte, relevés sur l'API. */
+  /**
+   * Les trois catégories et leur compte, relevés sur l'API.
+   *
+   * Deux colonnes, pas cinq. La liste des champs de la table débordait du
+   * calque et se faisait couper en plein mot : cinq intitulés en majuscules
+   * espacées ne tiennent pas dans une vignette. Les champs sont de toute
+   * façon détaillés dans le calque « gestion ».
+   */
   base: {
     caption: "Table « plat », neuf lignes",
-    columns: ["Nom", "Prix", "Catégorie", "Allergènes", "Visible"],
+    columns: ["Catégorie", "Plats"],
     counts: [
       { label: "Entrées", value: "3" },
       { label: "Plats", value: "3" },

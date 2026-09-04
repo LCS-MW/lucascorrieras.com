@@ -104,10 +104,10 @@ function LayerVisual({ visual }: { visual: string }) {
 
     case "code-api":
       return (
-        <div className="h-full overflow-hidden p-4">
+        <div className="flex h-full items-center overflow-hidden p-5">
           <pre className="overflow-hidden">
             <code className="font-mono text-ink text-label leading-relaxed whitespace-pre">
-              {api.code}
+              {api.apercu}
             </code>
           </pre>
         </div>
@@ -116,7 +116,7 @@ function LayerVisual({ visual }: { visual: string }) {
     case "schema-base":
       return (
         <div className="flex h-full flex-col justify-center gap-3 p-5">
-          <div className="border-rule flex gap-3 border-b pb-2">
+          <div className="border-rule flex items-baseline justify-between gap-4 border-b pb-2">
             {base.columns.map((column) => (
               <span
                 key={column}
@@ -127,8 +127,11 @@ function LayerVisual({ visual }: { visual: string }) {
             ))}
           </div>
           {base.counts.map((count) => (
-            <div key={count.label} className="flex items-center gap-3">
-              <span className="font-mono text-label text-ink-2 w-16 uppercase">
+            <div
+              key={count.label}
+              className="flex items-center justify-between gap-4"
+            >
+              <span className="font-mono text-label text-ink-2 uppercase">
                 {count.label}
               </span>
               <Bar className="h-1.5 flex-1" />

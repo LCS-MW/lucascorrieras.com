@@ -741,8 +741,14 @@ a:focus-visible .link-underline::after {
     min-height: 100svh;
     flex-direction: column;
     justify-content: center;
-    gap: 2.5rem;
+    gap: 2rem;
   }
+
+  /* Pas de sortie en pleine largeur ici. `width: 100vw` compte la barre de
+     défilement, donc déborde de sa largeur sur tout navigateur qui en affiche
+     une — ce qu'un Chrome sans interface ne montre pas. Et elle n'apporterait
+     rien en dessous de 1550 px de large : à 1440, la scène fait déjà 950 px
+     dans une colonne qui en offre 1024. */
 
   [data-eclat-scene] {
     container-type: inline-size;
@@ -750,7 +756,7 @@ a:focus-visible .link-underline::after {
     margin-inline: auto;
     /* La hauteur commande, la largeur suit : sur un portable de 700 px de
        haut, une scène réglée sur la largeur déborderait de l'écran épinglé. */
-    height: min(52svh, 30rem);
+    height: min(66svh, 46rem);
     width: auto;
     max-width: 100%;
     aspect-ratio: 16 / 10;
@@ -773,8 +779,16 @@ a:focus-visible .link-underline::after {
        déplacement, ce qui fait que le recentrage est grossi lui aussi et que
        le calque visé reste bien au milieu. Écrit dans l'autre sens, il
        dérivait d'autant plus que la caméra s'approchait. */
+    /* Deux grossissements multipliés : celui de l'ouverture et celui de la
+       caméra. Fermée, la pile est une page unique et doit remplir la scène,
+       sinon la section s'ouvre sur une vignette de 240 px perdue au milieu du
+       vide. Elle se replie à mesure qu'elle s'écarte, puis la caméra reprend
+       la main. */
     transform: scale(
-        calc(1 + (var(--approche) - 1) * var(--eclat-zoom))
+        calc(
+          (1 + (var(--approche) - 1) * var(--eclat-zoom)) *
+            (1 + (var(--approche) - 1) * (1 - var(--eclat-progress)))
+        )
       )
       translate3d(
         calc(var(--cam-x) * var(--eclat-zoom) * -1cqw),
@@ -803,6 +817,10 @@ a:focus-visible .link-underline::after {
     inset-inline: 0;
     inset-block-end: 100%;
     margin-block-end: 0.4rem;
+    /* Pile fermée, les sept calques sont au même endroit : leurs sept
+       étiquettes se superposaient en un pâté illisible. Elles n'arrivent que
+       sur la seconde moitié de l'ouverture, quand chacune a sa place. */
+    opacity: clamp(0, calc(var(--eclat-progress) * 2.4 - 1.4), 1);
   }
 
   [data-eclat-calque] {
@@ -819,8 +837,15 @@ a:focus-visible .link-underline::after {
       (62.5 - var(--calque) * 0.625) / 2 * 1cqw + var(--dy) *
         var(--eclat-progress) * 1cqw
     );
+    /* Le « + 1px » n'est pas un détail : pile fermée, la profondeur vaut zéro
+       pour tous les calques, et c'est alors l'ordre du document qui décide
+       lequel est devant. On voyait donc les conteneurs Docker à la place de la
+       page. Un pixel d'écart suffit à remettre le premier écran au premier
+       plan sans rien changer d'autre. */
     transform: translateZ(
-      calc(var(--i) * var(--profondeur) * var(--eclat-progress) * -1)
+      calc(
+        var(--i) * -1 * (var(--profondeur) * var(--eclat-progress) + 1px)
+      )
     );
     /* Distance signée au calque visé, puis sa cloche : 1 dessus, 0 au-delà
        d'un peu plus d'un calque. `abs()` n'est pas assez répandu, on passe
@@ -915,7 +940,7 @@ a:focus-visible .link-underline::after {
     display: block;
     margin-block-start: 0;
     margin-inline: auto;
-    min-height: 11rem;
+    min-height: 9rem;
     width: 100%;
     max-width: 42rem;
   }
