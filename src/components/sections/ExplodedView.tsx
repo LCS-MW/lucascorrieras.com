@@ -236,6 +236,14 @@ export function ExplodedView() {
                       <span className="text-ink-2">{layer.cote}</span>
                     </span>
 
+                    {/* Les deux tranches donnent son épaisseur au calque.
+                        Ce sont de vraies faces, pivotées d'un quart de tour
+                        dans l'espace : sans elles la pile n'est qu'une série
+                        de plans sans volume, et aucune rotation ne peut le
+                        faire croire. */}
+                    <span data-eclat-tranche="droite" aria-hidden="true" />
+                    <span data-eclat-tranche="bas" aria-hidden="true" />
+
                     <span data-eclat-cadre>
                       {/* Le cadre de sélection se referme sur le calque visé.
                           C'est le geste du logotype et de la séquence
@@ -256,14 +264,16 @@ export function ExplodedView() {
                   </div>
                 ))}
               </div>
-
-              {/* Cote de la pile : dit dans quel sens on s'enfonce. */}
-              <span data-eclat-axe className="font-mono text-label uppercase">
-                <span className="text-ink-2">{explode.axis.near}</span>
-                <span data-eclat-axe-trait />
-                <span className="text-ink-2">{explode.axis.far}</span>
-              </span>
             </div>
+
+            {/* La cote de profondeur est voisine de la scène, pas dedans :
+                la scène recadre, et posée à l'intérieur elle tombait 28 px
+                sous le bord inférieur, donc invisible malgré une opacité de 1. */}
+            <span data-eclat-axe className="font-mono text-label uppercase">
+              <span className="text-ink-2">{explode.axis.near}</span>
+              <span data-eclat-axe-trait />
+              <span className="text-ink-2">{explode.axis.far}</span>
+            </span>
 
             {/* Le texte du calque sur lequel la caméra est posée. C'est le
                 contenu réel de la section, pas un doublon : il est lu dans

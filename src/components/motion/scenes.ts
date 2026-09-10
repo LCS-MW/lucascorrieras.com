@@ -470,18 +470,65 @@ export const SCENES = {
         },
       });
 
+      /* ---- L'orbite au pointeur ------------------------------------------
+         La pile tourne légèrement de part et d'autre selon la position du
+         curseur. C'est ce qui fait basculer la lecture de « des images qui se
+         dispersent » à « un objet » : l'œil accepte une fausse profondeur dès
+         qu'elle répond à son propre déplacement.
+
+         Rien n'est branché sans souris fine. Au doigt, `pointermove` se
+         déclenche au contact et la pile partirait de travers sous le pouce. */
+      let libererOrbite: (() => void) | undefined;
+
+      if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+        const AMPLITUDE = 6;
+        const versX = api.gsap.quickTo(stage, "--orbite-x", {
+          duration: 0.7,
+          ease: EASE.feedback,
+        });
+        const versY = api.gsap.quickTo(stage, "--orbite-y", {
+          duration: 0.7,
+          ease: EASE.feedback,
+        });
+
+        const suivre = (event: PointerEvent) => {
+          const boite = piste.getBoundingClientRect();
+          const x = (event.clientX - (boite.left + boite.width / 2)) / (boite.width / 2);
+          const y = (event.clientY - (boite.top + boite.height / 2)) / (boite.height / 2);
+          const borne = (valeur: number) => Math.max(-1, Math.min(1, valeur));
+          versY(borne(x) * AMPLITUDE);
+          versX(borne(y) * -AMPLITUDE);
+        };
+
+        const relacher = () => {
+          versX(0);
+          versY(0);
+        };
+
+        piste.addEventListener("pointermove", suivre);
+        piste.addEventListener("pointerleave", relacher);
+        libererOrbite = () => {
+          piste.removeEventListener("pointermove", suivre);
+          piste.removeEventListener("pointerleave", relacher);
+          relacher();
+        };
+      }
+
       // Les propriétés sont retirées, pas remises à zéro : les valeurs de
       // repos appartiennent à la feuille de style, et `prefers-reduced-motion`
       // y ouvre la pile. Écrire 0 ici la refermerait pour qui a demandé à
       // réduire les animations en cours de visite.
       return () => {
         trigger.kill();
+        libererOrbite?.();
         for (const nom of [
           "--eclat-progress",
           "--eclat-zoom",
           "--eclat-camera",
           "--cam-x",
           "--cam-y",
+          "--orbite-x",
+          "--orbite-y",
         ]) {
           stage.style.removeProperty(nom);
         }

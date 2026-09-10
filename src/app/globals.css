@@ -682,6 +682,11 @@ a:focus-visible .link-underline::after {
   --calque: 32;
   --profondeur: 66px;
 
+  /* Épaisseur d'un calque. Assez pour se voir sous une rotation de quelques
+     degrés, assez peu pour que la pile reste un empilement de feuilles et non
+     de briques. */
+  --epaisseur: 10px;
+
   /* Grossissement de la caméra une fois posée. À 1,22 le calque visé faisait
      311 px dans une scène de 749 : trop petit pour qu'on y voie quoi que ce
      soit. À 2,4 il en occupe les deux tiers. */
@@ -692,6 +697,13 @@ a:focus-visible .link-underline::after {
      positions dispersées, non. */
   --cam-x: 0;
   --cam-y: 0;
+
+  /* Orbite de la caméra, en degrés, écrite par le pointeur. La pile tourne
+     autour de ce qu'on regarde, ce qui est la seule chose qui fasse lire du
+     volume : l'œil accepte une fausse 3D quand elle répond à son propre
+     déplacement. */
+  --orbite-x: 0;
+  --orbite-y: 0;
 }
 
 /* ---- La liste des légendes, base commune -------------------------------- */
@@ -721,7 +733,10 @@ a:focus-visible .link-underline::after {
   margin-block-end: 0.5rem;
 }
 
-[data-eclat-axe] {
+/* Hors de la scène, ni cote de profondeur ni tranches : sans perspective, une
+   face pivotée d'un quart de tour n'est qu'un trait. */
+[data-eclat-axe],
+[data-eclat-tranche] {
   display: none;
 }
 
@@ -784,7 +799,27 @@ a:focus-visible .link-underline::after {
        sinon la section s'ouvre sur une vignette de 240 px perdue au milieu du
        vide. Elle se replie à mesure qu'elle s'écarte, puis la caméra reprend
        la main. */
-    transform: scale(
+    /* L'ordre se lit de droite à gauche : on recentre, on grossit, puis on
+       tourne. La rotation vient donc en dernier, autour du centre de la scène,
+       où le calque visé se trouve déjà — il y reste donc, quel que soit
+       l'angle. Placée avant le recentrage, elle le décalait d'autant plus que
+       le calque était loin du centre.
+
+       L'assiette de base s'ouvre avec la pile puis s'aplatit de moitié quand
+       la caméra se pose : on garde du volume sans rendre la face illisible. */
+    transform: rotateX(
+        calc(
+          (var(--eclat-progress) * 7 + var(--orbite-x)) *
+            (1 - 0.5 * var(--eclat-zoom)) * 1deg
+        )
+      )
+      rotateY(
+        calc(
+          (var(--eclat-progress) * -13 + var(--orbite-y)) *
+            (1 - 0.5 * var(--eclat-zoom)) * 1deg
+        )
+      )
+      scale(
         calc(
           (1 + (var(--approche) - 1) * var(--eclat-zoom)) *
             (1 + (var(--approche) - 1) * (1 - var(--eclat-progress)))
@@ -821,6 +856,45 @@ a:focus-visible .link-underline::after {
        étiquettes se superposaient en un pâté illisible. Elles n'arrivent que
        sur la seconde moitié de l'ouverture, quand chacune a sa place. */
     opacity: clamp(0, calc(var(--eclat-progress) * 2.4 - 1.4), 1);
+  }
+
+  /* ---- L'épaisseur des calques ------------------------------------------- */
+
+  /* Le calque et son cadre laissent passer la 3D. Sans `preserve-3d` à chaque
+     étage, les tranches seraient aplaties dans le plan du calque et
+     n'apparaîtraient que comme deux traits. */
+  [data-eclat-calque],
+  [data-eclat-cadre] {
+    transform-style: preserve-3d;
+  }
+
+  /* Chaque tranche pivote autour de l'arête qu'elle prolonge et part vers
+     l'arrière. Même épaisseur pour les deux, sinon le volume ne se referme pas
+     à l'angle. Le fond est `surface` et non `paper` : une face vue de biais ne
+     reçoit pas la même lumière que la face avant, et c'est ce simple écart de
+     valeur qui donne le volume. Pas de dégradé, pas d'ombre. */
+  [data-eclat-tranche] {
+    position: absolute;
+    display: block;
+    background-color: var(--color-surface);
+  }
+
+  [data-eclat-tranche="droite"] {
+    inset-block: 0;
+    inset-inline-end: 0;
+    width: var(--epaisseur);
+    transform-origin: 100% 50%;
+    transform: rotateY(90deg);
+    border-block: 1px solid var(--color-rule);
+  }
+
+  [data-eclat-tranche="bas"] {
+    inset-inline: 0;
+    inset-block-end: 0;
+    height: var(--epaisseur);
+    transform-origin: 50% 100%;
+    transform: rotateX(-90deg);
+    border-inline: 1px solid var(--color-rule);
   }
 
   [data-eclat-calque] {
@@ -914,12 +988,12 @@ a:focus-visible .link-underline::after {
   /* ---- La cote de profondeur -------------------------------------------- */
 
   [data-eclat-axe] {
-    position: absolute;
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    inset-block-end: -1.75rem;
-    inset-inline: 0;
+    margin-inline: auto;
+    width: 100%;
+    max-width: 42rem;
     opacity: calc(var(--eclat-progress) * (1 - var(--eclat-zoom)));
   }
 
