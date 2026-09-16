@@ -736,7 +736,8 @@ a:focus-visible .link-underline::after {
 /* Hors de la scène, ni cote de profondeur ni tranches : sans perspective, une
    face pivotée d'un quart de tour n'est qu'un trait. */
 [data-eclat-axe],
-[data-eclat-tranche] {
+[data-eclat-tranche],
+[data-eclat-sol] {
   display: none;
 }
 
@@ -769,17 +770,30 @@ a:focus-visible .link-underline::after {
     container-type: inline-size;
     position: relative;
     margin-inline: auto;
-    /* La hauteur commande, la largeur suit : sur un portable de 700 px de
-       haut, une scène réglée sur la largeur déborderait de l'écran épinglé. */
-    height: min(66svh, 46rem);
-    width: auto;
-    max-width: 100%;
+    /* C'est la LARGEUR qui commande, et le rapport suit.
+       Réglée sur la hauteur avec un `max-width: 100%` en garde-fou, la scène
+       perdait son rapport dès que la largeur était contrainte : mesuré,
+       1024 × 736 au lieu de 1024 × 640 à partir de 1920 px de viewport, soit
+       un rapport de 1,39 au lieu de 1,60. Toute la géométrie étant calculée en
+       `cqw` — y compris sur l'axe vertical, où elle suppose 62,5 cqw de haut —
+       les calques se retrouvaient posés dans les 640 px du haut, 96 px de bas
+       morts, et ce qui dépassait se faisait couper.
+
+       Les trois bornes : la colonne de texte, la hauteur d'écran disponible
+       une fois les légendes déduites, et un plafond absolu. */
+    width: min(100%, calc(66svh * 1.6), 73.6rem);
     aspect-ratio: 16 / 10;
     perspective: 1400px;
-    /* La scène recadre. Quand la caméra s'enfonce, les premiers calques
-       sortent par le haut : sans ça ils débordaient de 128 px et venaient se
-       poser sur le titre de section. Une caméra qui s'approche ne montre pas
-       tout, c'est le propre du cadrage. */
+
+    /* Le recadrage revient à `overflow: hidden`, et il ne coupe plus rien
+       d'utile : la vraie cause des calques amputés était le rapport écrasé
+       corrigé juste au-dessus, pas le rognage. Vérifié à 1920 px, aucun calque
+       ne sort du cadre, ni sur les côtés ni en hauteur.
+
+       `clip-path` avait été essayé pour laisser filer les côtés. Il rogne bien
+       à l'écran, mais ne retient pas le débordement : le document gagnait
+       jusqu'à 462 px de défilement horizontal, le plan de travail dépassant
+       largement de la scène. */
     overflow: hidden;
   }
 
@@ -856,6 +870,44 @@ a:focus-visible .link-underline::after {
        étiquettes se superposaient en un pâté illisible. Elles n'arrivent que
        sur la seconde moitié de l'ouverture, quand chacune a sa place. */
     opacity: clamp(0, calc(var(--eclat-progress) * 2.4 - 1.4), 1);
+  }
+
+  /* ---- Le plan de travail ------------------------------------------------ */
+
+  /* Une grille au filet, posée loin derrière la pile et DANS la pile.
+     La distinction est tout le sujet : enfant de la scène, elle subissait la
+     perspective mais pas l'orbite, et redevenait un fond posé derrière un
+     objet qui bouge sans elle. Enfant de la pile, elle tourne avec, et c'est
+     ce qui lui donne le statut de sol plutôt que de papier peint. Un fond qui
+     bouge tout seul serait de la parallaxe générique, que les règles de motion
+     du site interdisent nommément. */
+  [data-eclat-sol] {
+    position: absolute;
+    display: block;
+    inset: -14% -22%;
+    height: auto;
+    width: auto;
+    transform: translateZ(calc(var(--profondeur) * -9));
+    fill: none;
+    stroke: var(--color-rule);
+    stroke-width: 0.3;
+    vector-effect: non-scaling-stroke;
+    /* Un plan de travail se remarque quand on le cherche, pas avant. `--rule`
+       est déjà une teinte d'accent très diluée ; à pleine opacité, quinze
+       traits finissent par bleuir toute la scène et concurrencer la pile. */
+    opacity: calc(0.45 * (1 - var(--eclat-zoom)));
+  }
+
+  /* Chaque trait se dessine, décalé du précédent. `pathLength="1"` rend la
+     longueur indépendante de la taille du trait, donc un seul calcul vaut pour
+     les verticales comme pour les horizontales. */
+  [data-eclat-sol] line {
+    stroke-dasharray: 1;
+    stroke-dashoffset: clamp(
+      0,
+      calc(1 - (var(--eclat-progress) * 2.6 - var(--n) * 0.1)),
+      1
+    );
   }
 
   /* ---- L'épaisseur des calques ------------------------------------------- */

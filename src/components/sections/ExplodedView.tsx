@@ -77,27 +77,42 @@ function LayerVisual({ visual }: { visual: string }) {
 
     case "schema-nav":
       return (
-        // Les trois libellés doivent tenir dans une vignette de 34 % de la
-        // scène, et dans une demi-colonne sur téléphone. Ils se partagent la
-        // largeur à parts égales et se coupent proprement plutôt que de
-        // déborder du cadre par les deux bords.
-        <div className="flex h-full flex-col items-center justify-center gap-3 p-4">
-          <div className="border-rule flex w-full gap-2 border px-2 py-2">
-            {navigation.items.map((item) => (
-              <span
-                key={item}
-                className="font-mono text-label text-ink-2 min-w-0 flex-1 truncate text-center uppercase"
-              >
-                {item}
-              </span>
-            ))}
+        /* Une vraie barre, pas trois traits. Le nom à gauche, les trois ancres
+           à droite, celle en cours soulignée à l'accent : c'est la barre du
+           site décrit, pas un symbole de barre. */
+        <div className="flex h-full flex-col p-4">
+          <div className="border-rule flex items-center justify-between gap-3 border-b pb-2.5">
+            <span className="font-display text-ink text-sm">
+              {navigation.marque}
+            </span>
+            <span className="flex gap-3">
+              {navigation.items.map((item) => (
+                <span key={item} className="relative">
+                  <span
+                    className={`font-mono text-label uppercase ${
+                      item === navigation.active ? "text-ink" : "text-ink-2"
+                    }`}
+                  >
+                    {item}
+                  </span>
+                  {item === navigation.active ? (
+                    <span className="bg-accent absolute inset-x-0 -bottom-1 block h-px" />
+                  ) : null}
+                </span>
+              ))}
+            </span>
           </div>
-          <div className="flex w-full gap-2">
-            {navigation.items.map((item) => (
-              <span key={item} className="flex flex-1 justify-center">
-                <span className="bg-accent block h-3 w-px" />
-              </span>
-            ))}
+
+          {/* Le haut de la page sous la barre : deux lignes de titre et le
+              début d'une grille, pour qu'on voie à quoi la barre est fixée. */}
+          <div className="mt-4 flex flex-1 flex-col gap-2">
+            <Bar className="h-2.5 w-1/2" />
+            <Bar className="h-1.5 w-2/3" />
+            <div className="mt-auto grid grid-cols-3 gap-2">
+              <span className="border-rule block h-6 border" />
+              <span className="border-rule block h-6 border" />
+              <span className="border-rule block h-6 border" />
+            </div>
           </div>
         </div>
       );
@@ -145,19 +160,49 @@ function LayerVisual({ visual }: { visual: string }) {
 
     case "schema-gestion":
       return (
-        <div className="flex h-full flex-col gap-2 p-5">
-          {gestion.menu.map((item) => (
-            <span
-              key={item}
-              className="border-rule font-mono text-label text-ink-2 block border px-3 py-1.5 uppercase"
-            >
-              {item}
-            </span>
-          ))}
-          <span className="bg-rule mt-1 block h-px w-full" />
-          <Bar className="h-1.5 w-full" />
-          <Bar className="h-1.5 w-4/5" />
-          <Bar className="h-1.5 w-3/5" />
+        /* Un vrai back-office : la colonne de menu à gauche, la liste des
+           plats à droite avec leur prix et leur état de publication. La
+           structure est celle relevée dans le projet, pas une invention. */
+        <div className="flex h-full items-center gap-3 p-4">
+          <div className="flex w-2/5 flex-col gap-1.5">
+            {gestion.menu.map((item, index) => (
+              <span
+                key={item}
+                className={`font-mono text-label block px-2 py-1.5 uppercase ${
+                  index === 1
+                    ? "bg-accent-soft text-accent"
+                    : "text-ink-2 border-rule border"
+                }`}
+              >
+                {item}
+              </span>
+            ))}
+          </div>
+
+          <div className="flex flex-1 flex-col gap-1.5">
+            {gestion.lignes.map((ligne) => (
+              <div
+                key={ligne.nom}
+                className="border-rule flex items-center gap-2 border-b pb-1.5"
+              >
+                <span className="text-ink-2 min-w-0 flex-1 truncate text-sm">
+                  {ligne.nom}
+                </span>
+                <span className="font-mono text-label text-ink">
+                  {ligne.prix}
+                </span>
+                {/* La case « visible » : pleine quand le plat est publié,
+                    vide quand il est retiré de la carte du soir. */}
+                <span
+                  className={`block h-2.5 w-2.5 border ${
+                    ligne.visible
+                      ? "border-accent bg-accent"
+                      : "border-rule bg-transparent"
+                  }`}
+                />
+              </div>
+            ))}
+          </div>
         </div>
       );
 
@@ -215,7 +260,48 @@ export function ExplodedView() {
                 qui portent le même contenu en texte réel et restent lues dans
                 l'ordre même quand une seule est visible à l'écran. */}
             <div data-eclat-scene aria-hidden="true">
+
               <div data-eclat-pile>
+                {/* Le plan de travail. Il est DANS la pile, pas derrière
+                    elle : il subit donc la même perspective et la même orbite,
+                    et c'est ce qui le fait lire comme un sol sur lequel l'objet
+                    est posé plutôt que comme un papier peint. Un décor animé
+                    indépendamment serait de la parallaxe de fond, que les règles
+                    de motion du site interdisent.
+
+                    Il se trace à mesure que la pile s'ouvre, puis s'efface quand
+                    la caméra plonge : à ce moment-là on n'est plus au-dessus de
+                    l'objet, on est dedans. */}
+                <svg
+                  data-eclat-sol
+                  aria-hidden="true"
+                  viewBox="0 0 160 100"
+                  preserveAspectRatio="none"
+                >
+                  {Array.from({ length: 9 }, (_, colonne) => (
+                    <line
+                      key={`v${colonne}`}
+                      style={{ "--n": colonne } as React.CSSProperties}
+                      x1={colonne * 20}
+                      y1="0"
+                      x2={colonne * 20}
+                      y2="100"
+                      pathLength="1"
+                    />
+                  ))}
+                  {Array.from({ length: 6 }, (_, rangee) => (
+                    <line
+                      key={`h${rangee}`}
+                      style={{ "--n": rangee + 9 } as React.CSSProperties}
+                      x1="0"
+                      y1={rangee * 20}
+                      x2="160"
+                      y2={rangee * 20}
+                      pathLength="1"
+                    />
+                  ))}
+                </svg>
+
                 {PLACES.map((layer, index) => (
                   <div
                     key={layer.id}

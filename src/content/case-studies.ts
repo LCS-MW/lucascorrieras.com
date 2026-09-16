@@ -224,6 +224,12 @@ export const carteRestaurant = {
     caption: "Structure de l’interface de gestion",
     menuLabel: "Le menu",
     menu: ["Tableau de bord", "Carte & Plats"],
+    /** Trois lignes de la liste d'administration, telles qu'elle les affiche. */
+    lignes: [
+      { nom: "Carpaccio de Saint-Jacques", prix: "22", visible: true },
+      { nom: "L’Œuf Parfait", prix: "19", visible: true },
+      { nom: "Raviole de Homard", prix: "28", visible: false },
+    ],
     fieldsLabel: "Ce qu’on remplit pour un plat",
     fields: ["Nom", "Description", "Prix", "Catégorie", "Allergènes", "Photo", "Visible"],
   },
@@ -263,10 +269,15 @@ export const carteRestaurant = {
     ],
   },
 
-  /** Les trois ancres de la barre de navigation du site décrit. */
+  /**
+   * La barre de navigation du site décrit. `active` est l'ancre en cours
+   * quand on arrive en haut de page, celle que la barre souligne.
+   */
   navigation: {
     caption: "Les trois ancres",
     items: ["Entrées", "Plats", "Desserts"],
+    active: "Entrées",
+    marque: "Le Restaurant",
   },
 
   stack: {
