@@ -19,21 +19,22 @@ const { explode, layers, api, gestion, base, hebergement, navigation } =
  * elle qui porte l'ordre, du plus visible au plus enfoui.
  *
  * Bornes à ne pas dépasser, pour que rien ne sorte du cadre au repos : un
- * calque fait 32 de large et 20 de haut dans une scène de 100 × 56,25 (16/9),
- * donc |dx| ≤ 34 et |dy| ≤ 18.
+ * calque fait 44 de large et 27,5 de haut dans une scène de 100 × 56,25 (16/9),
+ * donc |dx| ≤ 28 et |dy| ≤ 14.
  *
- * Les écarts verticaux ont été resserrés d'un cinquième en passant la scène du
- * 16/10 au 16/9. La dispersion reste plus large que haute, ce qui va au format
- * de la scène.
+ * La dispersion s'est resserrée deux fois : d'un cinquième en verticale au
+ * passage de la scène en 16/9, puis d'un sixième en horizontale quand le
+ * calque est passé de 32 à 44 pour réduire le grossissement de la caméra. Elle
+ * reste plus large que haute, ce qui va au format de la scène.
  */
 const POSITIONS: Record<string, { dx: number; dy: number }> = {
-  ecran: { dx: -29, dy: -11 },
+  ecran: { dx: -25, dy: -11 },
   navigation: { dx: 3, dy: -14 },
-  carte: { dx: 31, dy: -6 },
-  api: { dx: -33, dy: 3 },
-  base: { dx: 15, dy: 11 },
-  gestion: { dx: -13, dy: 14 },
-  hebergement: { dx: 32, dy: 13 },
+  carte: { dx: 26, dy: -6 },
+  api: { dx: -28, dy: 3 },
+  base: { dx: 13, dy: 11 },
+  gestion: { dx: -11, dy: 14 },
+  hebergement: { dx: 27, dy: 13 },
 };
 
 /** Les calques réellement plaçables : sans position, pas de place dans la pile. */
@@ -107,15 +108,25 @@ function LayerVisual({ visual }: { visual: string }) {
             </span>
           </div>
 
-          {/* Le haut de la page sous la barre : deux lignes de titre et le
-              début d'une grille, pour qu'on voie à quoi la barre est fixée. */}
-          <div className="mt-4 flex flex-1 flex-col gap-2">
-            <Bar className="h-2.5 w-1/2" />
-            <Bar className="h-1.5 w-2/3" />
-            <div className="mt-auto grid grid-cols-3 gap-2">
-              <span className="border-rule block h-6 border" />
-              <span className="border-rule block h-6 border" />
-              <span className="border-rule block h-6 border" />
+          {/* Le haut de la page sous la barre, pour qu'on voie à quoi elle est
+              fixée. Les blocs se répartissent sur toute la hauteur plutôt que
+              de se tasser en haut : à la taille du gros plan, un `mt-auto`
+              laissait un trou de deux cents pixels au milieu de la carte. */}
+          <div className="mt-4 flex flex-1 flex-col justify-evenly gap-3">
+            <div className="flex flex-col gap-2">
+              <Bar className="h-2.5 w-1/2" />
+              <Bar className="h-1.5 w-2/3" />
+            </div>
+            <div className="grid grid-cols-3 gap-2.5">
+              {navigation.items.map((item) => (
+                <span
+                  key={item}
+                  className="border-rule flex h-12 flex-col justify-end gap-1.5 border p-2"
+                >
+                  <Bar className="h-1.5 w-3/4" />
+                  <Bar className="h-1.5 w-1/2" />
+                </span>
+              ))}
             </div>
           </div>
         </div>

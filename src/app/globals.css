@@ -679,7 +679,7 @@ a:focus-visible .link-underline::after {
      Étalement total : 6 × 8 = 48 en x, 6 × 5.2 = 31,2 en y. Un calque fait
      34 de large et 21,25 de haut (16/10), la scène 100 × 62,5. Les deux
      tiennent donc dans le cadre avec 18 et 10 d'air. */
-  --calque: 32;
+  --calque: 44;
   --profondeur: 66px;
 
   /* Épaisseur d'un calque. Assez pour se voir sous une rotation de quelques
@@ -690,7 +690,7 @@ a:focus-visible .link-underline::after {
   /* Grossissement de la caméra une fois posée. À 1,22 le calque visé faisait
      311 px dans une scène de 749 : trop petit pour qu'on y voie quoi que ce
      soit. À 2,4 il en occupe les deux tiers. */
-  --approche: 2.1;
+  --approche: 1.45;
 
   /* Position de la caméra, interpolée en JavaScript entre les positions des
      deux calques encadrants. Un escalier régulier se calculait en CSS ; des
@@ -998,7 +998,7 @@ a:focus-visible .link-underline::after {
     /* Un dernier pas vers l'avant, en plus de l'approche de la caméra : le
        calque visé se détache de ceux qui l'entourent au lieu de simplement
        être plus net. */
-    scale: calc(1 + 0.08 * var(--f) * var(--eclat-zoom));
+    scale: calc(1 + 0.04 * var(--f) * var(--eclat-zoom));
     /* Pas de `will-change: transform` ici. Il fige la trame du calque à sa
        taille d'origine, que la caméra étire ensuite, et le texte du gros plan
        en ressortait flou. Sans lui, le navigateur retrace à l'échelle
