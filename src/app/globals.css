@@ -717,24 +717,19 @@ a:focus-visible .link-underline::after {
 /* Pas de perspective, pas de caméra, pas d'épinglage. Les calques se lisent
    en grille et les légendes se suivent. C'est la bonne lecture au pouce, et
    un défilement retenu y enferme le visiteur sans rien lui apprendre. */
-[data-eclat-pile] {
-  display: grid;
-  /* `minmax(0, 1fr)` et non `1fr` : la largeur minimale d'une piste vaut
-     celle de son contenu, et le calque « API » porte un bloc de code en
-     `white-space: pre` qui impose alors la longueur de sa plus longue ligne à
-     toute la page. Mesuré : 352 px de débordement à 390 px de large, malgré
-     l'`overflow: hidden` posé sur le bloc lui-même. */
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 1.25rem 1rem;
+/* `min-width: 0` sur la vignette empilée : le calque « API » porte un bloc de
+   code en `white-space: pre` qui, sans ça, impose la longueur de sa plus
+   longue ligne à toute la page. Mesuré : 352 px de débordement à 390 px de
+   large, malgré l'`overflow: hidden` posé sur le bloc lui-même. */
+[data-eclat-vignette],
+[data-eclat-legende] {
+  min-width: 0;
 }
 
-[data-eclat-etiquette] {
-  display: flex;
-  margin-block-end: 0.5rem;
-}
-
-/* Hors de la scène, ni cote de profondeur ni tranches : sans perspective, une
-   face pivotée d'un quart de tour n'est qu'un trait. */
+/* La scène entière disparaît, et les légendes portent tout. La cote de
+   profondeur et les tranches n'ont de toute façon pas de sens ici : sans
+   perspective, une face pivotée d'un quart de tour n'est qu'un trait. */
+[data-eclat-scene],
 [data-eclat-axe],
 [data-eclat-tranche],
 [data-eclat-sol] {
@@ -742,9 +737,8 @@ a:focus-visible .link-underline::after {
 }
 
 [data-eclat-legendes] {
-  margin-block-start: 3rem;
   display: grid;
-  gap: 2.5rem;
+  gap: 3.5rem;
 }
 
 /* ---- Au-dessus de 48 rem : la scène ------------------------------------- */
@@ -766,7 +760,13 @@ a:focus-visible .link-underline::after {
      rien en dessous de 1550 px de large : à 1440, la scène fait déjà 950 px
      dans une colonne qui en offre 1024. */
 
+  /* Le doublon n'a plus lieu d'être : la scène porte les visuels. */
+  [data-eclat-vignette] {
+    display: none;
+  }
+
   [data-eclat-scene] {
+    display: block;
     container-type: inline-size;
     position: relative;
     margin-inline: auto;
@@ -779,9 +779,16 @@ a:focus-visible .link-underline::after {
        les calques se retrouvaient posés dans les 640 px du haut, 96 px de bas
        morts, et ce qui dépassait se faisait couper.
 
-       Les trois bornes : la colonne de texte, la hauteur d'écran disponible
-       une fois les légendes déduites, et un plafond absolu. */
-    width: min(100%, calc(66svh * 1.6), 73.6rem);
+       Les trois bornes : la colonne de texte, la hauteur d'écran restante une
+       fois tout le reste déduit, et un plafond absolu.
+
+       Les 15 rem retirés ne sont pas un tampon de confort, c'est la somme de
+       ce qui partage la hauteur avec la scène : le bloc de légende (9 rem), la
+       cote de profondeur, les deux écarts de 2 rem et une marge haut et bas.
+       Sans cette soustraction, la piste dépassait l'écran qu'elle est censée
+       remplir : mesuré, 576 px de contenu dans une fenêtre de 540, donc un
+       haut de scène sous l'en-tête et un bas de légende hors champ. */
+    width: min(100%, calc((100svh - 15rem) * 1.6), 73.6rem);
     aspect-ratio: 16 / 10;
     perspective: 1400px;
 
@@ -1081,6 +1088,47 @@ a:focus-visible .link-underline::after {
     opacity: calc(
       var(--eclat-zoom) * max(0, calc(1 - var(--d) * var(--d) * 4))
     );
+  }
+}
+
+/* ---- Écran large mais court : deux colonnes -----------------------------
+
+   Sur un portable ou une fenêtre non maximisée, la hauteur est la ressource
+   rare et la largeur ne l'est pas. Empilées sous la scène, les légendes lui
+   prennent 144 px sur 540, soit plus du quart. Posées à côté, elles ne
+   prennent plus rien à la hauteur.
+
+   Le seuil est à 46 rem de haut : au-dessus, la colonne unique laisse déjà
+   assez d'air — 43 px mesurés à 900 px de haut — et donne une scène plus
+   large que ce que deux colonnes permettraient.
+   ------------------------------------------------------------------------ */
+
+@media (width >= 56rem) and (height <= 46rem) {
+  [data-eclat-piste] {
+    flex-direction: row;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  [data-eclat-scene] {
+    width: min(64%, calc((100svh - 6rem) * 1.6));
+    flex: none;
+  }
+
+  /* La réserve de hauteur est gardée : les légendes sont empilées en position
+     absolue, donc sans hauteur propre. Remise à zéro, la colonne s'effondrait
+     et le texte se retrouvait posé sur rien. */
+  [data-eclat-legendes] {
+    max-width: none;
+    flex: 1;
+    min-width: 0;
+    align-self: center;
+  }
+
+  /* La cote de profondeur n'a plus sa place : elle se lisait sous la scène,
+     et il n'y a plus de « sous ». */
+  [data-eclat-axe] {
+    display: none;
   }
 }
 

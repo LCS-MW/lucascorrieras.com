@@ -372,6 +372,21 @@ export function ExplodedView() {
                   data-eclat-legende
                   style={{ "--i": index } as React.CSSProperties}
                 >
+                  {/* Le visuel du calque, pour le format empilé. Sous 48 rem
+                      la scène n'est pas rendue, et une grille de sept
+                      vignettes muettes suivie de sept textes obligeait à
+                      rapprocher chaque numéro de son paragraphe. Ici chaque
+                      bloc est complet. Le second rendu ne coûte rien : la
+                      copie inutile est en `display: none`, donc son image
+                      n'est jamais demandée. */}
+                  <span
+                    data-eclat-vignette
+                    aria-hidden="true"
+                    className="border-rule bg-paper mb-5 block aspect-[16/10] overflow-hidden border"
+                  >
+                    <LayerVisual visual={layer.visual} />
+                  </span>
+
                   <p className="font-mono text-label text-accent uppercase">
                     {layer.cote} · {layer.label}
                   </p>
