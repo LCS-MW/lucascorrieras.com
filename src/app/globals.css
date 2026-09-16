@@ -791,7 +791,7 @@ a:focus-visible .link-underline::after {
 
        À 14 rem il restait encore des formats à 14 px d'air, 1366 × 768 et
        800 × 540 ; à 16 rem le pire cas passe à 26 px. */
-    width: min(100%, calc((100svh - 16rem) * 1.778), 73.6rem);
+    width: min(100%, calc((100svh - 18.5rem) * 1.778), 73.6rem);
     /* 16/9 et non 16/10. À partir de 1440 px de large, la scène est plafonnée
        par la colonne de texte et fait donc 1024 px quelle que soit la hauteur
        de l'écran : en 16/10 elle mesurait 640 px de haut et il ne restait que
@@ -994,7 +994,17 @@ a:focus-visible .link-underline::after {
        par le carré, qui est de toute façon la bonne courbe ici. */
     --d: calc(var(--i) - var(--eclat-camera));
     --f: max(0, calc(1 - var(--d) * var(--d) * 2.2));
-    opacity: calc(1 - var(--eclat-zoom) * (0.82 - 0.82 * var(--f)));
+    /* Ce qui est DERRIÈRE la caméra garde un reste de présence, ce qui est
+       devant disparaît. La cloche `--f` est symétrique et donnait 18 % aux
+       deux côtés : les quatre calques situés devant le calque visé se
+       superposaient donc à lui, et on voyait les photos de plats à travers la
+       carte de la base. `clamp(0, --d, 1)` vaut 1 derrière et 0 devant, sans
+       avoir besoin d'`abs()` ni de `sign()`, encore trop peu répandus. */
+    --derriere: clamp(0, var(--d), 1);
+    opacity: calc(
+      1 - var(--eclat-zoom) *
+        (1 - (var(--f) + (1 - var(--f)) * 0.18 * var(--derriere)))
+    );
     /* Un dernier pas vers l'avant, en plus de l'approche de la caméra : le
        calque visé se détache de ceux qui l'entourent au lieu de simplement
        être plus net. */
@@ -1082,7 +1092,12 @@ a:focus-visible .link-underline::after {
     display: block;
     margin-block-start: 0;
     margin-inline: auto;
-    min-height: 8rem;
+    /* 10,5 rem, soit 168 px, parce que les légendes en font 159 : elles sont
+       empilées en position absolue, donc le bloc ne se dimensionne jamais sur
+       son contenu, et une réserve trop courte les laissait déborder par le bas.
+       Mesuré : 128 px de réserve pour 159 px de texte, d'où les dernières
+       lignes collées au bord de l'écran. */
+    min-height: 10.5rem;
     width: 100%;
     max-width: 42rem;
   }
@@ -1127,7 +1142,11 @@ a:focus-visible .link-underline::after {
   /* La réserve de hauteur est gardée : les légendes sont empilées en position
      absolue, donc sans hauteur propre. Remise à zéro, la colonne s'effondrait
      et le texte se retrouvait posé sur rien. */
+  /* Colonne plus étroite, donc légendes plus hautes : 250 px mesurés contre
+     159 en pleine largeur. La réserve suit, sans coût de hauteur puisque le
+     bloc est à côté de la scène et non dessous. */
   [data-eclat-legendes] {
+    min-height: 16rem;
     max-width: none;
     flex: 1;
     min-width: 0;

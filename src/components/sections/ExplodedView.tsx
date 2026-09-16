@@ -145,7 +145,10 @@ function LayerVisual({ visual }: { visual: string }) {
 
     case "schema-base":
       return (
-        <div className="flex h-full flex-col justify-center gap-3 p-5">
+        // `justify-evenly` plutôt que `justify-center` : à la taille du gros
+        // plan, trois lignes centrées laissaient la moitié basse de la carte
+        // vide. Le pied de tableau ferme le bloc.
+        <div className="flex h-full flex-col justify-evenly gap-3 p-5">
           <div className="border-rule flex items-baseline justify-between gap-4 border-b pb-2">
             {base.columns.map((column) => (
               <span
@@ -170,6 +173,15 @@ function LayerVisual({ visual }: { visual: string }) {
               </span>
             </div>
           ))}
+
+          <div className="border-rule flex items-center justify-between gap-4 border-t pt-2.5">
+            <span className="font-mono text-label text-accent uppercase">
+              {base.total.label}
+            </span>
+            <span className="font-mono text-label text-ink">
+              {base.total.value}
+            </span>
+          </div>
         </div>
       );
 

@@ -245,6 +245,8 @@ export const carteRestaurant = {
   base: {
     caption: "Table « plat », neuf lignes",
     columns: ["Catégorie", "Plats"],
+    /** Pied de tableau. Le total est la somme des trois lignes au-dessus. */
+    total: { label: "Total", value: "9" },
     counts: [
       { label: "Entrées", value: "3" },
       { label: "Plats", value: "3" },
