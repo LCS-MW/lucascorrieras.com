@@ -19,17 +19,21 @@ const { explode, layers, api, gestion, base, hebergement, navigation } =
  * elle qui porte l'ordre, du plus visible au plus enfoui.
  *
  * Bornes à ne pas dépasser, pour que rien ne sorte du cadre au repos : un
- * calque fait 32 de large et 20 de haut dans une scène de 100 × 62,5, donc
- * |dx| ≤ 34 et |dy| ≤ 21.
+ * calque fait 32 de large et 20 de haut dans une scène de 100 × 56,25 (16/9),
+ * donc |dx| ≤ 34 et |dy| ≤ 18.
+ *
+ * Les écarts verticaux ont été resserrés d'un cinquième en passant la scène du
+ * 16/10 au 16/9. La dispersion reste plus large que haute, ce qui va au format
+ * de la scène.
  */
 const POSITIONS: Record<string, { dx: number; dy: number }> = {
-  ecran: { dx: -29, dy: -14 },
-  navigation: { dx: 3, dy: -18 },
-  carte: { dx: 31, dy: -7 },
-  api: { dx: -33, dy: 4 },
-  base: { dx: 15, dy: 14 },
-  gestion: { dx: -13, dy: 18 },
-  hebergement: { dx: 32, dy: 16 },
+  ecran: { dx: -29, dy: -11 },
+  navigation: { dx: 3, dy: -14 },
+  carte: { dx: 31, dy: -6 },
+  api: { dx: -33, dy: 3 },
+  base: { dx: 15, dy: 11 },
+  gestion: { dx: -13, dy: 14 },
+  hebergement: { dx: 32, dy: 13 },
 };
 
 /** Les calques réellement plaçables : sans position, pas de place dans la pile. */

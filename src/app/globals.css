@@ -751,7 +751,7 @@ a:focus-visible .link-underline::after {
     min-height: 100svh;
     flex-direction: column;
     justify-content: center;
-    gap: 2rem;
+    gap: 1.75rem;
   }
 
   /* Pas de sortie en pleine largeur ici. `width: 100vw` compte la barre de
@@ -782,14 +782,23 @@ a:focus-visible .link-underline::after {
        Les trois bornes : la colonne de texte, la hauteur d'écran restante une
        fois tout le reste déduit, et un plafond absolu.
 
-       Les 15 rem retirés ne sont pas un tampon de confort, c'est la somme de
-       ce qui partage la hauteur avec la scène : le bloc de légende (9 rem), la
-       cote de profondeur, les deux écarts de 2 rem et une marge haut et bas.
-       Sans cette soustraction, la piste dépassait l'écran qu'elle est censée
-       remplir : mesuré, 576 px de contenu dans une fenêtre de 540, donc un
-       haut de scène sous l'en-tête et un bas de légende hors champ. */
-    width: min(100%, calc((100svh - 15rem) * 1.6), 73.6rem);
-    aspect-ratio: 16 / 10;
+       Les 16 rem retirés ne sont pas un tampon de confort, c'est la somme de
+       ce qui partage la hauteur avec la scène : le bloc de légende (8 rem), la
+       cote de profondeur, les deux écarts et une marge haut et bas. Sans cette
+       soustraction, la piste dépassait l'écran qu'elle est censée remplir :
+       mesuré, 576 px de contenu dans une fenêtre de 540, donc un haut de scène
+       sous l'en-tête et un bas de légende hors champ.
+
+       À 14 rem il restait encore des formats à 14 px d'air, 1366 × 768 et
+       800 × 540 ; à 16 rem le pire cas passe à 26 px. */
+    width: min(100%, calc((100svh - 16rem) * 1.778), 73.6rem);
+    /* 16/9 et non 16/10. À partir de 1440 px de large, la scène est plafonnée
+       par la colonne de texte et fait donc 1024 px quelle que soit la hauteur
+       de l'écran : en 16/10 elle mesurait 640 px de haut et il ne restait que
+       20 px d'air une fois les légendes placées. En 16/9 elle en fait 576, et
+       l'air passe à 96. La pile n'en souffre pas — elle n'occupait de toute
+       façon que 84 % de la hauteur disponible, mesuré. */
+    aspect-ratio: 16 / 9;
     perspective: 1400px;
 
     /* Le recadrage revient à `overflow: hidden`, et il ne coupe plus rien
@@ -1073,7 +1082,7 @@ a:focus-visible .link-underline::after {
     display: block;
     margin-block-start: 0;
     margin-inline: auto;
-    min-height: 9rem;
+    min-height: 8rem;
     width: 100%;
     max-width: 42rem;
   }
