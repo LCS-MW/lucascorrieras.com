@@ -947,12 +947,18 @@ a:focus-visible .link-underline::after {
     background-color: var(--color-surface);
   }
 
+  /* Signes négatifs et positifs choisis pour que l'épaisseur parte VERS
+     L'ARRIÈRE. `rotateY(90deg)` sur une face ancrée à son bord droit l'envoie
+     vers l'avant, donc devant la face du calque et devant ses poignées
+     d'angle : au grossissement, le filet de la tranche traversait la poignée
+     et la coupait en deux selon l'angle de l'orbite. Une épaisseur qui sort
+     par devant n'a de toute façon aucun sens physique. */
   [data-eclat-tranche="droite"] {
     inset-block: 0;
     inset-inline-end: 0;
     width: var(--epaisseur);
     transform-origin: 100% 50%;
-    transform: rotateY(90deg);
+    transform: rotateY(-90deg);
     border-block: 1px solid var(--color-rule);
   }
 
@@ -961,7 +967,7 @@ a:focus-visible .link-underline::after {
     inset-block-end: 0;
     height: var(--epaisseur);
     transform-origin: 50% 100%;
-    transform: rotateX(-90deg);
+    transform: rotateX(90deg);
     border-inline: 1px solid var(--color-rule);
   }
 
@@ -1032,6 +1038,13 @@ a:focus-visible .link-underline::after {
     height: 7px;
     width: 7px;
     background-color: var(--color-accent);
+    /* Deux pixels vers l'avant, et pas seulement un `z-index`. Dans un
+       contexte `preserve-3d`, l'ordre de tracé se décide sur la profondeur
+       réelle, et le `z-index` ne départage que des éléments strictement
+       coplanaires. Poignées et filet de la carte l'étaient : selon l'angle de
+       l'orbite, le filet repassait par-dessus une poignée puis redisparaissait.
+       Deux pixels d'avance lèvent l'ambiguïté sans rien changer à l'œil. */
+    transform: translateZ(2px);
     /* Le cadre se resserre de six pixels en se posant : au repos les poignées
        sont un peu au large, une fois attrapées elles collent aux angles. */
     --marge: calc(-3px - 6px * (1 - var(--f)));
