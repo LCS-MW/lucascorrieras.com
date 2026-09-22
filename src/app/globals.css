@@ -708,8 +708,15 @@ a:focus-visible .link-underline::after {
 
   /* Elle prolonge la cote du cadre jusqu'à la marge de page, et se réduit à
      mesure qu'on élargit. Sa largeur est une soustraction faite en CSS —
-     « ce qui reste » vaut le maximum mesuré moins la largeur courante du
-     cadre — donc rien n'est écrit ici pendant le glissement. */
+     « ce qui reste » vaut le plafond moins la largeur courante du cadre —
+     donc rien n'est écrit ici pendant le glissement.
+
+     **Elle n'existe qu'au survol du cadre**, comme les cotes d'espacement d'un
+     outil de design : on ne voit les marges qu'au moment où on va s'en servir.
+     C'est aussi ce qui la réconcilie avec la séquence d'entrée — le cadre s'y
+     trace, et une cote qui serait simplement posée à côté, sans rien faire,
+     jurerait avec ce tracé. Ici elle se trace à son tour, mais quand le
+     visiteur la demande. */
   [data-marge-cote] {
     display: block;
     position: absolute;
@@ -719,12 +726,24 @@ a:focus-visible .link-underline::after {
     container-type: inline-size;
   }
 
+  /* Le trait se tire depuis le bord du cadre vers la marge — même geste que
+     les filets du cadre dans la séquence d'entrée, même absence
+     d'accélération : c'est un tracé d'outil, pas un mouvement organique. */
   [data-marge-filet] {
     position: absolute;
     inset-block-start: 1px;
     inset-inline: 0;
     block-size: 1px;
     background-color: var(--color-rule);
+    transform-origin: left center;
+    scale: 0 1;
+    transition: scale 260ms linear;
+  }
+
+  [data-marge-mark],
+  [data-marge-valeur] {
+    opacity: 0;
+    transition: opacity 160ms var(--ease-reveal);
   }
 
   [data-marge-mark] {
@@ -735,6 +754,30 @@ a:focus-visible .link-underline::after {
     block-size: 0.5rem;
     background-color: var(--color-rule);
   }
+
+  /* Le survol du cadre, ou le focus clavier sur la poignée : le second n'est
+     pas un supplément, c'est la même information rendue à qui n'a pas de
+     souris. */
+  [data-cadre]:hover [data-marge-filet],
+  [data-cadre]:has([data-poignee-largeur]:focus-visible) [data-marge-filet] {
+    scale: 1 1;
+  }
+
+  [data-cadre]:hover [data-marge-mark],
+  [data-cadre]:has([data-poignee-largeur]:focus-visible) [data-marge-mark] {
+    opacity: 1;
+    transition-delay: 200ms;
+  }
+
+  [data-cadre]:hover [data-marge-valeur],
+  [data-cadre]:has([data-poignee-largeur]:focus-visible) [data-marge-valeur] {
+    opacity: 1;
+    transition-delay: 240ms;
+  }
+
+  /* Les retards ne valent qu'à l'apparition. À la sortie, tout s'efface
+     ensemble et tout de suite — attendre pour disparaître donnerait
+     l'impression que le calque colle au curseur. */
 
   /* `display: none` et non `opacity: 0` : centrée sur un trait devenu nul à la
      largeur maximale, cette valeur dépassait le bord de la fenêtre de 12 px et

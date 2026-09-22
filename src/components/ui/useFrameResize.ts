@@ -52,6 +52,8 @@ export function useFrameResize() {
   const enveloppe = useRef<HTMLDivElement | null>(null);
   const bornesRef = useRef<Bornes | null>(null);
   const largeurRef = useRef<number | null>(null);
+  /** Non nul pendant un glissement. Sert aussi de verrou contre un second. */
+  const finRef = useRef<AbortController | null>(null);
 
   const ref = useCallback((node: HTMLDivElement | null) => {
     enveloppe.current = node;
@@ -151,6 +153,13 @@ export function useFrameResize() {
       observateur.disconnect();
       pointeur.removeEventListener("change", mesurer);
       window.removeEventListener("resize", mesurer);
+
+      /* Démontage en plein glissement : les écouteurs partent avec le signal,
+         mais l'attribut posé sur `<html>` vit en dehors de React et resterait
+         sinon derrière nous. */
+      finRef.current?.abort();
+      finRef.current = null;
+      delete document.documentElement.dataset.cadreTire;
     };
   }, [poser]);
 
@@ -160,30 +169,61 @@ export function useFrameResize() {
     (evenement: React.PointerEvent<HTMLElement>) => {
       const hote = enveloppe.current;
       if (!hote || evenement.button !== 0 || !bornesRef.current) return;
+      if (finRef.current) return; // un glissement est déjà en cours
 
       const poignee = evenement.currentTarget;
+      const pointeur = evenement.pointerId;
       const departX = evenement.clientX;
       const departLargeur = hote.getBoundingClientRect().width;
 
       evenement.preventDefault();
-      poignee.setPointerCapture(evenement.pointerId);
       document.documentElement.dataset.cadreTire = "";
 
-      const glisser = (suite: PointerEvent) => {
-        poser(departLargeur + (suite.clientX - departX));
-      };
+      /* La capture garde les événements sur la poignée même quand le curseur
+         en sort. Elle peut échouer — pointeur déjà relâché, identifiant
+         inconnu — et ce n'est pas une raison d'abandonner le glissement : les
+         écouteurs sont posés sur la fenêtre, qui les recevra de toute façon.
+         Sans ce filet, une capture refusée laissait le curseur de
+         redimensionnement et la sélection coupée posés sur toute la page,
+         définitivement. */
+      try {
+        poignee.setPointerCapture(pointeur);
+      } catch {
+        // On glisse sans capture : la fenêtre suffit.
+      }
+
+      const fin = new AbortController();
+      finRef.current = fin;
+      const { signal } = fin;
 
       const relacher = () => {
-        poignee.removeEventListener("pointermove", glisser);
-        poignee.removeEventListener("pointerup", relacher);
-        poignee.removeEventListener("pointercancel", relacher);
+        if (finRef.current !== fin) return;
+        finRef.current = null;
+        fin.abort();
+        try {
+          poignee.releasePointerCapture(pointeur);
+        } catch {
+          // Déjà relâchée.
+        }
         delete document.documentElement.dataset.cadreTire;
         setLargeur(largeurRef.current);
       };
 
-      poignee.addEventListener("pointermove", glisser);
-      poignee.addEventListener("pointerup", relacher);
-      poignee.addEventListener("pointercancel", relacher);
+      window.addEventListener(
+        "pointermove",
+        (suite: PointerEvent) => {
+          if (suite.pointerId !== pointeur) return;
+          poser(departLargeur + (suite.clientX - departX));
+        },
+        { signal },
+      );
+      window.addEventListener("pointerup", relacher, { signal });
+      window.addEventListener("pointercancel", relacher, { signal });
+
+      /* Changement d'onglet, Alt+Tab, boîte de dialogue native : le
+         `pointerup` n'arrivera jamais. C'est le seul chemin par lequel l'état
+         de glissement pouvait rester collé à la page. */
+      window.addEventListener("blur", relacher, { signal });
     },
     [poser],
   );
