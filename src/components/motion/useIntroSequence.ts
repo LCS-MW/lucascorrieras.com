@@ -26,7 +26,17 @@ const FRAME_EDGE_DURATION = 0.16;
 const FRAME_EDGE_OFFSET = 0.09;
 
 /** Le premier geste du visiteur lui rend la main. */
-const SKIP_EVENTS = ["wheel", "touchmove", "keydown", "scroll"] as const;
+/* `pointerdown` y figure pour la poignée de largeur du cadre : attraper le
+   bord pendant la séquence laisserait le titre découpé en lignes par
+   SplitText, et le redimensionnement figerait un retour à la ligne calculé
+   sur une largeur qui n'existe déjà plus. */
+const SKIP_EVENTS = [
+  "wheel",
+  "touchmove",
+  "keydown",
+  "scroll",
+  "pointerdown",
+] as const;
 
 /**
  * Séquence d'entrée de l'accueil.

@@ -582,6 +582,203 @@ a:focus-visible .link-underline::after {
 }
 
 /* ==========================================================================
+   Cadre redimensionnable
+   ==========================================================================
+
+   Le bord droit du cadre de sélection se tire. C'est le seul geste direct du
+   site : partout ailleurs le visiteur fait défiler et le site répond, ici il
+   attrape un objet et le déforme. La cote sous le cadre cesse d'être une
+   mesure posée là — elle change parce qu'on a tiré dessus.
+
+   Le cadre part du bord gauche de la colonne et n'en bouge jamais : c'est ce
+   qui garde le titre aligné avec le surtitre, l'accroche et les boutons. Il
+   peut en revanche dépasser la colonne vers la droite, jusqu'à la marge de
+   page exactement — donc sans jamais créer de défilement horizontal. */
+
+/* La section est un conteneur de requête : `cqw` y vaut 1 % de sa largeur
+   utile, remplissage déduit — donc sans la barre de défilement, contrairement
+   à `vw`. */
+[data-hero] {
+  container-type: inline-size;
+}
+
+[data-cadre] {
+  /* 48 rem est la largeur de dessin, celle que portait `max-w-3xl`. Dès que le
+     visiteur a tiré, `--cadre` est posée en pixels sur l'élément et l'emporte. */
+  inline-size: var(--cadre, min(48rem, 100%));
+
+  /* Plafond : la distance entre le bord gauche de la colonne et la marge de
+     page. Le cadre ne peut donc littéralement pas déborder du document.
+
+     Les deux termes sont les deux régimes de la mise en page. Tant que la
+     section est plus étroite que la colonne, celle-ci part du remplissage et
+     la distance vaut toute la largeur utile — `100cqw`. Au-delà, la colonne se
+     centre, sa moitié gauche de gouttière vaut `(100cqw - 64rem) / 2`, et la
+     distance vaut `100cqw` moins cette gouttière, soit `50cqw + 32rem`.
+     Vérifié : 1 184 px à 1440, 1 744 px à 2560.
+
+     C'est volontairement du CSS et pas du JavaScript. Le crochet calcule la
+     même borne pour `aria-valuemax` et pour le chiffre de la marge, mais il
+     dépend d'un `ResizeObserver` : mesuré, il pouvait avoir jusqu'à une
+     seconde de retard au redimensionnement, et le document gagnait 436 px de
+     défilement horizontal pendant ce temps. Une règle CSS n'est jamais en
+     retard. */
+  --cadre-plafond: min(100cqw, calc(50cqw + 32rem));
+  max-inline-size: var(--cadre-plafond);
+}
+
+/* Rien de tout ceci n'existe sans souris fine ni sans place pour bouger. Au
+   doigt, la poignée se disputerait le glissement avec le défilement de la
+   page ; sous 64 rem, le cadre occupe déjà presque toute la colonne. */
+[data-poignee-largeur],
+[data-cadre-invite],
+[data-marge-cote] {
+  display: none;
+}
+
+@media (width >= 64rem) and (hover: hover) and (pointer: fine) {
+  /* ---- La poignée ------------------------------------------------------ */
+
+  /* Seize pixels de large pour être attrapable sans viser, à cheval sur le
+     filet. Elle ne dessine rien d'elle-même : ce qu'on voit est le cadre, qui
+     est déjà là. */
+  [data-poignee-largeur] {
+    display: block;
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: -0.5rem;
+    inline-size: 1rem;
+    cursor: ew-resize;
+    touch-action: none;
+  }
+
+  /* Au survol, le filet droit s'épaissit vers l'intérieur. C'est la seule
+     réponse visuelle, et elle dit exactement ce qui va bouger. */
+  [data-poignee-largeur]::after {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0.5rem;
+    inline-size: 3px;
+    background-color: var(--color-accent);
+    opacity: 0;
+    transition: opacity 160ms var(--ease-reveal);
+  }
+
+  [data-poignee-largeur]:hover::after,
+  [data-poignee-largeur]:focus-visible::after,
+  html[data-cadre-tire] [data-poignee-largeur]::after {
+    opacity: 1;
+  }
+
+  /* ---- L'invite -------------------------------------------------------- */
+
+  /* Sans elle, personne ne devine que le bord se tire. Elle est calée en haut
+     à droite du cadre, donc elle grandit vers la GAUCHE : à la largeur
+     maximale, il ne reste aucune marge à droite et une invite qui pousserait
+     de ce côté ferait déborder le document. */
+  [data-cadre-invite] {
+    display: block;
+    position: absolute;
+    inset-inline-end: 0;
+    inset-block-end: calc(100% + 0.4rem);
+    font-size: var(--text-label);
+    letter-spacing: var(--tracking-label);
+    line-height: 1;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--color-ink-2);
+    opacity: 0;
+    transition: opacity 160ms var(--ease-reveal);
+    pointer-events: none;
+  }
+
+  [data-cadre]:hover [data-cadre-invite],
+  [data-cadre]:has([data-poignee-largeur]:focus-visible) [data-cadre-invite] {
+    opacity: 1;
+  }
+
+  /* Une fois la main sur le bord, l'invite n'a plus rien à apprendre à
+     personne. */
+  html[data-cadre-tire] [data-cadre-invite] {
+    opacity: 0;
+  }
+
+  /* ---- La cote de marge ------------------------------------------------ */
+
+  /* Elle prolonge la cote du cadre jusqu'à la marge de page, et se réduit à
+     mesure qu'on élargit. Sa largeur est une soustraction faite en CSS —
+     « ce qui reste » vaut le maximum mesuré moins la largeur courante du
+     cadre — donc rien n'est écrit ici pendant le glissement. */
+  [data-marge-cote] {
+    display: block;
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: calc(100% + 0.75rem);
+    inline-size: max(0px, calc(var(--cadre-plafond) - 100% - 1.5rem));
+    container-type: inline-size;
+  }
+
+  [data-marge-filet] {
+    position: absolute;
+    inset-block-start: 1px;
+    inset-inline: 0;
+    block-size: 1px;
+    background-color: var(--color-rule);
+  }
+
+  [data-marge-mark] {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-end: 0;
+    inline-size: 1px;
+    block-size: 0.5rem;
+    background-color: var(--color-rule);
+  }
+
+  /* `display: none` et non `opacity: 0` : centrée sur un trait devenu nul à la
+     largeur maximale, cette valeur dépassait le bord de la fenêtre de 12 px et
+     ajoutait autant de défilement horizontal au document. Une opacité nulle
+     cache à l'œil mais compte toujours dans la largeur de défilement — seul
+     `display: none` la retire vraiment. Mesuré : 12 px avant, 0 après. */
+  [data-marge-valeur] {
+    display: none;
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: 50%;
+    translate: -50% -50%;
+    padding-inline: 0.5rem;
+    background-color: var(--color-paper);
+    font-size: var(--text-label);
+    letter-spacing: var(--tracking-label);
+    line-height: 1;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--color-ink-2);
+  }
+
+  /* La valeur ne s'affiche que si le trait est assez long pour la porter.
+     Une requête de conteneur plutôt qu'un seuil en JavaScript : la marge est
+     déjà une largeur CSS, elle sait se mesurer elle-même. */
+  @container (min-width: 7.5rem) {
+    [data-marge-valeur] {
+      display: block;
+    }
+  }
+}
+
+/* Pendant le glissement, le curseur reste celui du redimensionnement où qu'il
+   passe, et plus rien ne se sélectionne : sans ça, tirer vers la gauche
+   surlignerait le titre au passage. */
+html[data-cadre-tire] {
+  cursor: ew-resize;
+}
+
+html[data-cadre-tire] body {
+  user-select: none;
+}
+
+/* ==========================================================================
    Section maquette → site
    ========================================================================== */
 
@@ -863,7 +1060,7 @@ a:focus-visible .link-underline::after {
            restaient plus petits que les premiers même une fois visés — 57 %
            de la scène contre 73 %, mesuré. Avec, ils font tous la même
            taille. */
-        calc(var(--eclat-camera) * var(--profondeur) * var(--eclat-zoom))
+          calc(var(--eclat-camera) * var(--profondeur) * var(--eclat-zoom))
       );
 
     /* Pas de bascule sur l'axe X, et c'est un choix. Une inclinaison de 6°
@@ -991,9 +1188,7 @@ a:focus-visible .link-underline::after {
        page. Un pixel d'écart suffit à remettre le premier écran au premier
        plan sans rien changer d'autre. */
     transform: translateZ(
-      calc(
-        var(--i) * -1 * (var(--profondeur) * var(--eclat-progress) + 1px)
-      )
+      calc(var(--i) * -1 * (var(--profondeur) * var(--eclat-progress) + 1px))
     );
     /* Distance signée au calque visé, puis sa cloche : 1 dessus, 0 au-delà
        d'un peu plus d'un calque. `abs()` n'est pas assez répandu, on passe
